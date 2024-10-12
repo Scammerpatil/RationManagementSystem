@@ -1,0 +1,48 @@
+import mongoose, { Schema } from "mongoose";
+
+const TehsilSchema = new Schema(
+  {
+    tehsilUserId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    address: {
+      type: mongoose.Types.ObjectId,
+      ref: "Address",
+      required: true,
+      unique: true,
+    },
+    fpsShopUnder: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "FairPriceShop",
+      },
+    ],
+    officers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Officer",
+      },
+    ],
+    stock: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Stock",
+      },
+    ],
+    transactions: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Transaction" },
+    ],
+    allocatedStock: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Stock",
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
+const Tehsil = mongoose.models.Tehsil || mongoose.model("Tehsil", TehsilSchema);
+export default Tehsil;
