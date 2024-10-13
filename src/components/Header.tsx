@@ -20,7 +20,10 @@ function Header() {
           </p>
         </div>
       </div>
-      <div className="dropdown dropdown-hover dropdown-left">
+      <div
+        className="dropdown dropdown-hover dropdown-left"
+        data-theme="cupcake"
+      >
         <div
           tabIndex={0}
           role="button"

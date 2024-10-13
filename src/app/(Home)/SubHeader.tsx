@@ -74,6 +74,20 @@ const buttons: ButtonProps[] = [
     icon: <GiftIcon className="text-3xl" />,
   },
   {
+    name: "FPS Registration",
+    list: [
+      {
+        text: "Register as FPS",
+        link: "/fps/register",
+      },
+      {
+        text: "Manage FPS Details",
+        link: "/fps/manage",
+      },
+    ],
+    icon: <IdCard className="text-3xl" />,
+  },
+  {
     name: "Reports",
     list: [
       {

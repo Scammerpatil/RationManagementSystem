@@ -41,6 +41,10 @@ const FairPriceShopSchema = new Schema(
         ref: "Transaction",
       },
     ],
+    isAdminApproved: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

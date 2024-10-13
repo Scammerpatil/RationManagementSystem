@@ -123,7 +123,9 @@ const NewRationPage = () => {
           router.push("/public-login");
           return "Application submitted successfully.";
         },
-        error: "Error submitting application.",
+        error: (e) => {
+          return e.response.data.message;
+        },
       });
     } catch (error) {
       toast.error("Error submitting application.");

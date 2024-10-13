@@ -49,6 +49,10 @@ const RationCardSchema = new Schema({
     ref: "Stock",
     required: true,
   },
+  isAdminApproved: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const RationCard =

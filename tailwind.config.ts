@@ -7,6 +7,9 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    daisyui: {
+      themes: ["light"],
+    },
     extend: {
       colors: {
         background: "#fff",

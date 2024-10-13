@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import verifyEmail from "@/middlewares/verifyemail";
 import User from "@/models/User";
 import RationCard from "@/models/RationCard";
+import dbConfig from "@/middlewares/db.config";
+
+dbConfig();
 
 export async function POST(req: NextRequest) {
   const body = await req.json();

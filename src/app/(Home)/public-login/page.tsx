@@ -99,13 +99,10 @@ const PublicLogin = () => {
         (
           document.getElementById("otpContainer") as HTMLDialogElement
         ).showModal();
-        submitForm();
         return "OTP Sent Successfully";
       },
       error: "Failed to send OTP",
     });
-
-    console.log(formData);
   };
 
   const submitForm = () => {
@@ -118,7 +115,9 @@ const PublicLogin = () => {
     const response = axios.post("/api/auth/user-login", data);
     toast.promise(response, {
       loading: "Logging in...",
-      success: () => {
+      success: (data) => {
+        const user = data.data.rationCard;
+        localStorage.setItem("user", JSON.stringify(user));
         router.push("/user/dashboard");
         return "Logged in successfully";
       },
@@ -258,10 +257,11 @@ const PublicLogin = () => {
               onClick={() => {
                 if (otp === otpSent) {
                   setOtpVerified(true);
-                  toast.success("Email Verified Successfully");
+                  toast.success("OTP Verified Successfully");
                   (
                     document.getElementById("otpContainer") as HTMLDialogElement
                   ).close();
+                  submitForm();
                 } else {
                   toast.error("Invalid OTP");
                 }
