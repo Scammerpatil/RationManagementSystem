@@ -82,10 +82,11 @@ const PublicLogin = () => {
       return;
     }
 
-    const otp = axios.post(
-      "/api/auth/send-otp-by-aadhar",
-      formData.aadhaar || formData.rationNumber
-    );
+    const otp = axios.post("/api/auth/send-otp-by-aadhar", {
+      aadhaar: formData.aadhaar !== "" ? formData.aadhaar : undefined,
+      rationNumber:
+        formData.rationNumber !== "" ? formData.rationNumber : undefined,
+    });
 
     toast.promise(otp, {
       loading: "Sending OTP...",

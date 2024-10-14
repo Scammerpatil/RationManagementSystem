@@ -10,24 +10,41 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { aadhaar, rationNumber } = body;
   console.log(body);
-
+  
+  let user = null;
+  let email = null;
   if (aadhaar) {
-    const user = await User.findOne({ aadhaarNumber: aadhaar });
+    const aadharNumber = aadhaar.toString();
+    user = await User.findOne({ aadharNumber });
+    
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
-    } else {
-      var email = user.email;
     }
-  } else {
-    const user = await RationCard.findOne({ rationNumber }).populate("head");
-    var email = user.head.email;
+    email = user.email;
+  } else if (rationNumber) {
+    user = await RationCard.findOne({ rationNumber }).populate("head");
+    if (!user) {
+      return NextResponse.json(
+        { message: "Ration card not found" },
+        { status: 404 }
+      );
+    }
+    email = user.head.email;
   }
+
+  if (!email) {
+    return NextResponse.json({ message: "Email not found" }, { status: 404 });
+  }
+
   const token = Math.floor(100000 + Math.random() * 900000).toString();
-  console.log(email);
   const response = await verifyEmail(email, token);
+
   if (response) {
     return NextResponse.json({ token, email }, { status: 200 });
   } else {
-    return NextResponse.json({ message: "Email not found" }, { status: 404 });
+    return NextResponse.json(
+      { message: "Email sending failed" },
+      { status: 500 }
+    );
   }
 }
