@@ -7,24 +7,42 @@ import dbConfig from "@/middlewares/db.config";
 dbConfig();
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { aadhaar, rationNumber } = body;
-  if (aadhaar) {
-    const user = await User.findOne({ aadhaar });
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    } else {
-      var email = user.email;
-    }
-  } else {
-    const user = await RationCard.findOne({ rationNumber }).populate("head");
-    var email = user.head.email;
+  const number = await req.json();
+
+  if (!number) {
+    return NextResponse.json(
+      { message: "Please provide a valid number" },
+      { status: 400 }
+    );
   }
-  const token = Math.floor(100000 + Math.random() * 900000).toString();
-  const response = await verifyEmail(email, token);
-  if (response) {
-    return NextResponse.json({ token, email }, { status: 200 });
+
+  let userEmail: string | null = null;
+
+  const user = await User.findOne({ aadharNumber: number });
+  if (user) {
+    userEmail = user.email;
   } else {
-    return NextResponse.json({ message: "Email not found" }, { status: 404 });
+    const rationCard = await RationCard.findOne({
+      rationNumber: number,
+    }).populate("head");
+    if (rationCard && rationCard.head && rationCard.head.email) {
+      userEmail = rationCard.head.email;
+    }
+  }
+
+  if (!userEmail) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
+  }
+
+  const token = Math.floor(100000 + Math.random() * 900000).toString();
+  const emailResponse = await verifyEmail(userEmail, token);
+
+  if (emailResponse) {
+    return NextResponse.json({ token, email: userEmail }, { status: 200 });
+  } else {
+    return NextResponse.json(
+      { message: "Failed to send verification email" },
+      { status: 500 }
+    );
   }
 }

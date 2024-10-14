@@ -45,44 +45,61 @@ export async function middleware(req: NextRequest) {
     "/admin/register",
     "/admin/login",
   ].includes(pathname);
+
+  // Check if a token is present in cookies
   const token = req.cookies.get("token")?.value || "";
   const isLoggedIn = !!token;
 
-  const { data } = await verifyToken(token);
-  if (!data) {
-    console.log("User verification failed, redirecting to signin");
-    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
+  // If user is not logged in and trying to access protected routes, redirect to login
+  if (!isLoggedIn && !isPublicPath) {
+    console.log("Not logged in, redirecting to public login page");
+    return NextResponse.redirect(new URL("/public-login", req.nextUrl.origin));
   }
 
-  const { role, isAdminApproved } = data;
-  console.log("User role:", data.role);
+  // If logged in, verify token
+  if (isLoggedIn) {
+    const user = await verifyToken(token);
 
-  if (isPublicPath && isLoggedIn) {
-    return NextResponse.redirect(
-      new URL(`/${role}/dashboard`, req.nextUrl.origin)
-    );
-  }
+    // If token is invalid, redirect to login page
+    if (!user) {
+      console.log("Token verification failed, redirecting to login");
+      return NextResponse.redirect(
+        new URL("/public-login", req.nextUrl.origin)
+      );
+    }
 
-  if (isLoggedIn && !isPublicPath) {
+    const { role, isAdminApproved } = user;
+    console.log("User role:", role);
+
+    // Redirect to appropriate dashboard if the user is admin approved
+    if (isAdminApproved) {
+      const dashboardPath = `/${role}/dashboard`;
+
+      // If user is trying to access a public page while logged in, redirect to their dashboard
+      if (isPublicPath) {
+        return NextResponse.redirect(
+          new URL(dashboardPath, req.nextUrl.origin)
+        );
+      }
+
+      // If user is logged in and approved, let them proceed to the requested protected route
+      return NextResponse.next();
+    }
+
+    // If user is logged in but not admin-approved, redirect to the "not-approved" page
     if (!isAdminApproved) {
-      console.log("User is not approved, redirecting to not-approved");
+      console.log("User is not admin approved, redirecting to 'not-approved'");
       return NextResponse.redirect(
         new URL("/not-approved", req.nextUrl.origin)
       );
     }
-
-    console.log("User is approved, allowing access to the requested path");
-    return NextResponse.next();
   }
 
-  if (!isPublicPath && !isLoggedIn) {
-    console.log("Not logged in, redirecting to signin");
-    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
-  }
-
+  // If user is trying to access a public page and is not logged in, allow them access
   return NextResponse.next();
 }
 
+// Matcher to define which routes this middleware applies to
 export const config = {
   matcher: [
     "/",

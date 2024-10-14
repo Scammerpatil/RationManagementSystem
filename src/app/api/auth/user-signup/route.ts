@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         { message: "Password is required" },
         { status: 400 }
       );
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await hashPassword(password as string);
 
     // Upload documents
     const uploadedDocs = await uploadDocuments(
@@ -218,9 +218,9 @@ async function createRationCard(
 }
 
 function determineCardType(income: number): "White" | "Saffron" | "Yellow" {
-  if (income <= 10000) return "White";
-  if (income <= 25000) return "Saffron";
-  return "Yellow";
+  if (income <= 15000) return "Yellow";
+  if (income <= 100000) return "Saffron";
+  return "White";
 }
 
 function getInitialStock(
@@ -283,9 +283,21 @@ function getInitialStock(
   return stock;
 }
 
-function generateRationCardNumber() {
-  return Array(12)
-    .fill(null)
-    .map(() => Math.floor(Math.random() * 10))
-    .join("");
-}
+const generateRationCardNumber = async () => {
+  const regionCode = "MH";
+  const currentYear = new Date().getFullYear().toString();
+  const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, "0");
+
+  const lastCard = await RationCard.findOne({
+    rationCardNumber: { $regex: `^${regionCode}${currentYear}` },
+  }).sort({ rationCardNumber: -1 });
+
+  let newNumber = "0001";
+
+  if (lastCard) {
+    const lastNumber = parseInt(lastCard.ration_card_number.slice(-4));
+    newNumber = (lastNumber + 1).toString().padStart(4, "0");
+  }
+
+  return `${regionCode}${currentYear}${currentMonth}${newNumber}`;
+};

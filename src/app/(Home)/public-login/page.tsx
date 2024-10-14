@@ -101,7 +101,9 @@ const PublicLogin = () => {
         ).showModal();
         return "OTP Sent Successfully";
       },
-      error: "Failed to send OTP",
+      error: (error) => {
+        return error.response.data.message;
+      },
     });
   };
 
@@ -119,9 +121,11 @@ const PublicLogin = () => {
         const user = data.data.rationCard;
         localStorage.setItem("user", JSON.stringify(user));
         router.push("/user/dashboard");
-        return "Logged in successfully";
+        return data.data.message;
       },
-      error: "Failed to login",
+      error: (error) => {
+        return error.response.data.message;
+      },
     });
   };
 
