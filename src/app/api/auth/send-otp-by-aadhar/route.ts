@@ -33,16 +33,11 @@ export async function POST(req: NextRequest) {
   if (!userEmail) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
-
   const token = Math.floor(100000 + Math.random() * 900000).toString();
-  const emailResponse = await verifyEmail(userEmail, token);
-
-  if (emailResponse) {
-    return NextResponse.json({ token, email: userEmail }, { status: 200 });
+  const response = await verifyEmail(userEmail, token);
+  if (response) {
+    return NextResponse.json({ token, userEmail }, { status: 200 });
   } else {
-    return NextResponse.json(
-      { message: "Failed to send verification email" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Email not found" }, { status: 404 });
   }
 }

@@ -1,15 +1,9 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import {
-  ChangeEvent,
-  FormEvent,
-  MouseEvent,
-  use,
-  useEffect,
-  useState,
-} from "react";
+import { ChangeEvent, FormEvent, MouseEvent, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { EyeOff, Eye } from "lucide-react";
 
 const PublicLogin = () => {
   const [loginMethod, setLoginMethod] = useState<"aadhaar" | "rationNumber">(
@@ -27,6 +21,7 @@ const PublicLogin = () => {
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState("");
   const [otpVerified, setOtpVerified] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // New state for password visibility toggle
   const router = useRouter();
 
   // Generate Captcha
@@ -87,10 +82,11 @@ const PublicLogin = () => {
       return;
     }
 
-    const otp = axios.post(
-      "/api/auth/send-otp-by-aadhar",
-      formData.aadhaar || formData.rationNumber
-    );
+    const otp = axios.post("/api/auth/send-otp-by-aadhar", {
+      aadhaar: formData.aadhaar !== "" ? formData.aadhaar : undefined,
+      rationNumber:
+        formData.rationNumber !== "" ? formData.rationNumber : undefined,
+    });
 
     toast.promise(otp, {
       loading: "Sending OTP...",
@@ -194,23 +190,34 @@ const PublicLogin = () => {
             </div>
           )}
 
-          <div className="mb-4">
+          {/* Password input with toggle */}
+          <div className="mb-4 relative">
             <label className="block text-gray-700 font-semibold">
               Password
             </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-              placeholder="Enter the Captcha"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                className="mt-2 p-3 pr-10 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
+                placeholder="Enter Password"
+                required
+              />
+              {/* Eye/EyeOff icon toggle */}
+              <span
+                className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-700"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </span>
+            </div>
           </div>
 
+          {/* Captcha input */}
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold">Captcha</label>
             <input
@@ -238,7 +245,8 @@ const PublicLogin = () => {
           </button>
         </form>
       </div>
-      <dialog id="otpContainer" className="modal modal-bottom sm:modal-middle ">
+
+      <dialog id="otpContainer" className="modal modal-bottom sm:modal-middle">
         <div className="modal-box flex flex-col justify-center items-center gap-5">
           <h1 className="mt-5">Verify Your Email</h1>
           <label

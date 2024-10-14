@@ -37,7 +37,6 @@ export async function POST(req: NextRequest) {
     }
     user = rationCard.head;
   }
-
   const isPasswordCorrect = await bcrypt.compare(password, user.password);
   if (!isPasswordCorrect) {
     return NextResponse.json(
