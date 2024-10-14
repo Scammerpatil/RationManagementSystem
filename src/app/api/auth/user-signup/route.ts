@@ -218,9 +218,9 @@ async function createRationCard(
 }
 
 function determineCardType(income: number): "White" | "Saffron" | "Yellow" {
-  if (income <= 10000) return "White";
-  if (income <= 25000) return "Saffron";
-  return "Yellow";
+  if (income <= 15000) return "Yellow";
+  else if (income >= 15000 && income <= 100000) return "Saffron";
+  return "White";
 }
 
 function getInitialStock(
