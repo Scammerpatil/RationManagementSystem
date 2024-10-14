@@ -9,8 +9,10 @@ dbConfig();
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { aadhaar, rationNumber } = body;
+  console.log(body);
+
   if (aadhaar) {
-    const user = await User.findOne({ aadhaar });
+    const user = await User.findOne({ aadhaarNumber: aadhaar });
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     } else {
@@ -21,6 +23,7 @@ export async function POST(req: NextRequest) {
     var email = user.head.email;
   }
   const token = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log(email);
   const response = await verifyEmail(email, token);
   if (response) {
     return NextResponse.json({ token, email }, { status: 200 });
