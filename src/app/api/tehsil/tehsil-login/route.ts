@@ -3,12 +3,14 @@ import Tehsil from "@/models/Tehsil";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import dbConfig from "@/middlewares/db.config";
+import Address from "@/models/Address";
 
 dbConfig();
 
 export async function POST(req: NextRequest) {
   const { tehsilUserId, password } = await req.json();
   console.log(tehsilUserId, password);
+  Address;
 
   if (!tehsilUserId || !password) {
     return NextResponse.json(
