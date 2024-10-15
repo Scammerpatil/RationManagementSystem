@@ -64,7 +64,10 @@ export async function POST(req: NextRequest) {
     });
     await newFps.save();
 
-    return NextResponse.json({ message: "FPS Registered Successfully", fpsId:fpsUserId });
+    return NextResponse.json({
+      message: "FPS Registered Successfully",
+      fpsId: fpsUserId,
+    });
   } catch (error: any) {
     console.error("Error registering FPS:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -75,7 +78,7 @@ const generateFPSShopNumber = async (taluka: String) => {
   const regionCode = "FPS";
 
   const talukaCode = taluka.substring(0, 2).toUpperCase();
-  
+
   const currentYear = new Date().getFullYear().toString();
 
   const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, "0");
@@ -84,12 +87,12 @@ const generateFPSShopNumber = async (taluka: String) => {
     fpsUserId: { $regex: `^${regionCode}-${talukaCode}-` },
   }).sort({ fpsUserId: -1 });
 
-  let newNumber = "0001"; 
+  let newNumber = "0001";
 
   if (lastShop) {
-    const lastNumber = parseInt(lastShop.fpsUserId.split("-").pop(), 10); 
-    newNumber = (lastNumber + 1).toString().padStart(4, "0"); 
+    const lastNumber = parseInt(lastShop.fpsUserId.split("-").pop(), 10);
+    newNumber = (lastNumber + 1).toString().padStart(4, "0");
   }
 
-  return `${regionCode}-${talukaCode}-${newNumber}`; 
+  return `${regionCode}-${talukaCode}-${newNumber}`;
 };

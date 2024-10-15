@@ -34,7 +34,7 @@ const FPSLogin = () => {
   }, []);
 
   useEffect(() => {
-    if (formData.fpsId.length === 10 || !formData.password) {
+    if (formData.fpsId.length === 11 || !formData.password) {
       setDisabled(false);
     } else {
       setDisabled(true);
