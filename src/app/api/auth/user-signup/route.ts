@@ -42,6 +42,8 @@ export async function POST(req: NextRequest) {
     familyMembersCount,
   } = parseFormData(formData);
 
+  console.log(state)
+
   try {
     const existingUser = await User.findOne({
       $or: [{ aadharNumber }, { email }],
