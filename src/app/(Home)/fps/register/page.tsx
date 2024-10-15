@@ -23,7 +23,7 @@ const FairPriceShopForm = () => {
       street: "",
       taluka: "",
       district: "",
-      state: "",
+      state: "Maharashtra",
       pincode: "",
     },
   });
@@ -315,7 +315,7 @@ const FairPriceShopForm = () => {
                 type="text"
                 name="state"
                 value={fpsData.address.state}
-                onChange={handleAddressChange}
+                disabled
                 className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
                 placeholder="Enter state"
                 required

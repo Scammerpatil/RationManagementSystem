@@ -8,13 +8,14 @@ import RationCard from "@/models/RationCard";
 import Stock from "@/models/Stock";
 import Application from "@/models/Application";
 import rationCardRequest from "@/middlewares/rationCardRequest";
+import mongoose from "mongoose";
 
 dbConfig();
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
 
-  // Extract data from the request
+  // Parse form data
   const {
     fullName,
     email,
@@ -42,26 +43,37 @@ export async function POST(req: NextRequest) {
     familyMembersCount,
   } = parseFormData(formData);
 
+  console.log(fullName);
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const existingUser = await User.findOne({
       $or: [{ aadharNumber }, { email }],
-    });
+    }).session(session);
+
     if (existingUser) {
+      await session.abortTransaction();
       return NextResponse.json(
         { message: "User already exists" },
         { status: 400 }
       );
     }
 
-    if (!password)
+    if (!password) {
+      await session.abortTransaction();
       return NextResponse.json(
         { message: "Password is required" },
         { status: 400 }
       );
+    }
+
     const hashedPassword = await hashPassword(password as string);
 
     // Upload documents
     if (!aadhaarFront || !aadhaarBack || !incomeCertificate) {
+      await session.abortTransaction();
       return NextResponse.json(
         { message: "All document files are required" },
         { status: 400 }
@@ -78,32 +90,39 @@ export async function POST(req: NextRequest) {
     );
 
     // Create new user
-    const newUser = await createUser({
-      fullName,
-      email,
-      aadharNumber,
-      dob,
-      mobileNumber,
-      gender,
-      occupation,
-      caste,
-      relationship,
-      income,
-      bankName,
-      accountNumber,
-      ifscCode,
-      password: hashedPassword,
-      uploadedDocs,
-    });
+    const newUser = await createUser(
+      {
+        fullName,
+        email,
+        aadharNumber,
+        dob,
+        mobileNumber,
+        gender,
+        occupation,
+        caste,
+        relationship,
+        income,
+        bankName,
+        accountNumber,
+        ifscCode,
+        password: hashedPassword,
+        uploadedDocs,
+      },
+      session
+    );
 
     if (isHead === "true") {
       await createRationCard(
         newUser,
         { street, state, pincode, taluka, district },
         income,
-        familyMembersCount
+        familyMembersCount,
+        session
       );
     }
+
+    await session.commitTransaction();
+    session.endSession();
 
     return NextResponse.json(
       { message: "User Created Successfully" },
@@ -111,6 +130,8 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error(error);
+    await session.abortTransaction();
+    session.endSession();
     return NextResponse.json(
       { message: "Something went wrong" },
       { status: 500 }
@@ -187,30 +208,31 @@ async function uploadFile(file: Blob, aadharNumber: string, type: string) {
   );
 }
 
-async function createUser(userData: any) {
+async function createUser(userData: any, session: any) {
   const newUser = new User({
     ...userData,
     aadhaarFrontCardUrl: userData.uploadedDocs.aadhaarFrontCardUrl.secure_url,
     aadhaarBackCardUrl: userData.uploadedDocs.aadhaarBackCardUrl.secure_url,
     incomeProofUrl: userData.uploadedDocs.incomeProofUrl.secure_url,
   });
-  return await newUser.save();
+  return await newUser.save({ session });
 }
 
 async function createRationCard(
   user: any,
   addressData: any,
   income: number,
-  familyMembersCount: number
+  familyMembersCount: number,
+  session: any
 ) {
   const address = new Address({ ...addressData });
-  const savedAddress = await address.save();
+  const savedAddress = await address.save({ session });
 
   const cardType = determineCardType(income);
   const initialStock = getInitialStock(cardType, familyMembersCount);
 
   const stock = new Stock({ ...initialStock });
-  const savedStock = await stock.save();
+  const savedStock = await stock.save({ session });
 
   const newRationCard = new RationCard({
     rationCardNumber: await generateRationCardNumber(),
@@ -221,14 +243,15 @@ async function createRationCard(
     stock: savedStock._id,
   });
 
-  await newRationCard.save();
+  await newRationCard.save({ session });
 
   const application = new Application({
     rationCard: newRationCard._id,
   });
-  await application.save();
+  await application.save({ session });
+
   if (newRationCard) {
-    await rationCardRequest(user.email, newRationCard.populate("head"));
+    await rationCardRequest(user.email, await newRationCard.populate("head"));
   }
 }
 
@@ -310,7 +333,7 @@ const generateRationCardNumber = async () => {
   let newNumber = "0001";
 
   if (lastCard) {
-    const lastNumber = parseInt(lastCard.ration_card_number.slice(-4));
+    const lastNumber = parseInt(lastCard.rationCardNumber.slice(-4));
     newNumber = (lastNumber + 1).toString().padStart(4, "0");
   }
 

@@ -23,7 +23,7 @@ export default async function rationCardRequest(
     to: email,
     subject: "Request for new Ration Card",
     html: ejs.render(template, {
-      userName: rationCard.head.name,
+      userName: rationCard.head?.fullName,
       rationCardType: rationCard.cardType,
       applicationNumber: rationCard.rationNumber,
     }),

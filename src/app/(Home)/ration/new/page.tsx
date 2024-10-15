@@ -34,7 +34,7 @@ const NewRationPage = () => {
     street: "",
     district: "",
     pincode: "",
-    state: "",
+    state: "Maharashtra",
     taluka: "",
   });
   const [disabled, setDisabled] = useState(true);
@@ -247,7 +247,7 @@ const NewRationPage = () => {
             {/* Caste */}
             <div>
               <label className="block text-gray-700 font-semibold">
-                Caste <span className="text-red-600">*</span>
+                Category <span className="text-red-600">*</span>
               </label>
               <select
                 name="caste"
@@ -256,7 +256,7 @@ const NewRationPage = () => {
                 className="mt-2 p-3 block w-full border border-gray-300 bg-gray-50 text-black rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
                 required
               >
-                <option value="">Select Caste</option>
+                <option value="">Select Category</option>
                 <option value="SC">SC</option>
                 <option value="ST">ST</option>
                 <option value="OBC">OBC</option>
@@ -448,16 +448,12 @@ const NewRationPage = () => {
             {/* State Code */}
             <div>
               <label className="block text-gray-700 font-semibold">State</label>
-              <select
+              <input
                 name="Taluka"
                 value={address.state}
-                onChange={(e) =>
-                  setAddress({ ...address, state: e.target.value })
-                }
+                disabled
                 className="mt-2 p-3 block w-full bg-gray-50 text-black border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-              >
-                <option value="Maharashtra">Maharashtra</option>
-              </select>
+              />
             </div>
 
             {/* Pin Code */}
