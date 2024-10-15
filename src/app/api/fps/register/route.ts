@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import dbConfig from "@/middlewares/db.config";
 import Address from "@/models/Address";
 import FairPriceShop from "@/models/FairPriceShop";
@@ -7,9 +8,19 @@ import { NextRequest, NextResponse } from "next/server";
 dbConfig();
 export async function POST(req: NextRequest) {
   const fpsData = await req.json();
-  console.log("fpsData:", fpsData);
-  const { fpsUserId, fullName, mobileNumber, email, role, address } = fpsData;
+  const { fpsUserId, fullName, mobileNumber, email, role, address, password } =
+    fpsData;
   const { street, taluka, district, state, pincode } = address;
+
+  const existingFPS = await FairPriceShop.findOne({ pincode: pincode });
+  if (existingFPS) {
+    return NextResponse.json(
+      { message: "FPS already exists with this pincode" },
+      { status: 400 }
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 12);
 
   try {
     // Create and save the address
@@ -44,6 +55,8 @@ export async function POST(req: NextRequest) {
       mobileNumber,
       email,
       role,
+      pincode,
+      password: hashedPassword,
       address: savedAddress._id,
       stock: savedStock._id,
     });

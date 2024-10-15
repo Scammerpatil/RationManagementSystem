@@ -58,7 +58,7 @@ export async function middleware(req: NextRequest) {
 
   // If logged in, verify token
   if (isLoggedIn) {
-    const user = await verifyToken(token);
+    const { user } = await verifyToken(token);
 
     // If token is invalid, redirect to login page
     if (!user) {
@@ -69,24 +69,19 @@ export async function middleware(req: NextRequest) {
     }
 
     const { role, isAdminApproved } = user;
-    console.log("User role:", role);
 
-    // Redirect to appropriate dashboard if the user is admin approved
     if (isAdminApproved) {
       const dashboardPath = `/${role}/dashboard`;
 
-      // If user is trying to access a public page while logged in, redirect to their dashboard
       if (isPublicPath) {
         return NextResponse.redirect(
           new URL(dashboardPath, req.nextUrl.origin)
         );
       }
 
-      // If user is logged in and approved, let them proceed to the requested protected route
       return NextResponse.next();
     }
 
-    // If user is logged in but not admin-approved, redirect to the "not-approved" page
     if (!isAdminApproved) {
       console.log("User is not admin approved, redirecting to 'not-approved'");
       return NextResponse.redirect(
@@ -95,11 +90,9 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // If user is trying to access a public page and is not logged in, allow them access
   return NextResponse.next();
 }
 
-// Matcher to define which routes this middleware applies to
 export const config = {
   matcher: [
     "/",

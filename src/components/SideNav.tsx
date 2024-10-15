@@ -105,14 +105,16 @@ const SideNav = ({
                       {/* User Initial */}
                       <div className="flex items-center justify-center mb-2">
                         <div className="flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full text-xl font-bold">
-                          {user && user.head.fullName?.split(" ")[0][0]}
+                          {user?.head?.fullName
+                            ? user.head.fullName.split(" ")[0][0]
+                            : user?.ownerName?.split(" ")[0][0]}
                         </div>
                       </div>
 
                       {/* User Name */}
                       <div className="flex items-center justify-center">
                         <span className="text-lg font-semibold text-gray-900">
-                          {user && user.name}
+                          {user?.head?.fullName || user?.ownerName}
                         </span>
                       </div>
 

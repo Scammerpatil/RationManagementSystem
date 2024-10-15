@@ -7,7 +7,8 @@ import dbConfig from "@/middlewares/db.config";
 dbConfig();
 
 export async function POST(req: NextRequest) {
-  const number = await req.json();
+  const { aadhaar, rationNumber } = await req.json();
+  var number = aadhaar || rationNumber;
 
   if (!number) {
     return NextResponse.json(

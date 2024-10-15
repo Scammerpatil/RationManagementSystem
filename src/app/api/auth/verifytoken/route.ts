@@ -7,8 +7,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No token found" });
   }
   try {
-    var data = jwt.verify(token, process.env.JWT_SECRET!);
-    return NextResponse.json({ data, status: 200 });
+    var user = jwt.verify(token, process.env.JWT_SECRET!);
+    return NextResponse.json({ user, status: 200 });
   } catch (err) {
     NextResponse.json({ err });
   }

@@ -19,6 +19,7 @@ const Header = ({ user, router }) => {
       toast.error("Failed to logout");
     }
   };
+
   return (
     <header className="relative flex justify-between items-center p-4 bg-blue-500 text-white shadow-md">
       <div className="flex items-center">
@@ -58,14 +59,15 @@ const Header = ({ user, router }) => {
                 {/* User Initial */}
                 <div className="flex items-center justify-center mb-2">
                   <div className="flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full text-xl font-bold">
-                    {user && user.head.fullName?.split(" ")[0][0]}
+                    {(user && user.head?.fullName?.split(" ")[0][0]) ||
+                      (user && user.ownerName?.split(" ")[0][0])}
                   </div>
                 </div>
 
                 {/* User Name */}
                 <div className="flex items-center justify-center">
                   <span className="text-lg font-semibold text-gray-900">
-                    {user && user.name}
+                    {user && (user.head?.fullName || user.ownerName)}
                   </span>
                 </div>
 
@@ -106,8 +108,6 @@ const NotApproved = () => {
   const router = useRouter();
   const user = useUser();
 
-  console.log(user);
-
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/");
@@ -116,7 +116,7 @@ const NotApproved = () => {
   const renderPendingMessage = () => {
     if (!user) return null;
 
-    switch (user.head.role || user.role) {
+    switch (user.head?.role || user.role) {
       case "user":
         return (
           <p>
@@ -131,13 +131,7 @@ const NotApproved = () => {
             approval. Please wait for further updates.
           </p>
         );
-      case "tehsil":
-        return (
-          <p>
-            Your request to become a Tehsil officer is pending approval. Kindly
-            check back later.
-          </p>
-        );
+      // Tehsil case removed as it will be admin approved by default
       default:
         return (
           <p>

@@ -29,6 +29,11 @@ const FairPriceShopSchema = new Schema(
       ref: "Address",
       required: true,
     },
+    pincode: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     stock: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -44,6 +49,10 @@ const FairPriceShopSchema = new Schema(
     isAdminApproved: {
       type: Boolean,
       default: false,
+    },
+    password: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true }

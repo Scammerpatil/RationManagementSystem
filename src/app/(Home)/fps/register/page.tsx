@@ -1,4 +1,5 @@
 "use client";
+import { MAHARASHTRA_DISTRICTS, MAHARASHTRA_TALUKAS } from "@/utils/Constants";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -84,6 +85,19 @@ const FairPriceShopForm = () => {
     });
   };
 
+  const handleCopyToClipboard = () => {
+    if (fpsData.fpsUserId) {
+      navigator.clipboard
+        .writeText(fpsData.fpsUserId)
+        .then(() => {
+          alert("FPS User ID copied to clipboard!");
+        })
+        .catch((err) => {
+          console.error("Failed to copy FPS User ID:", err);
+        });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const response = axios.post("/api/fps/register", fpsData);
@@ -100,6 +114,16 @@ const FairPriceShopForm = () => {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 p-8">
+        <div className="mb-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+          <p>
+            <strong>Note 1:</strong> Note the FPS ID and password for future
+            reference.
+          </p>
+          <p>
+            <strong>Note 2:</strong> FPS ID is the unique ID provided to you by
+            the government.
+          </p>
+        </div>
         <h2 className="text-4xl font-bold mb-8 text-center text-indigo-700">
           Fair Price Shop Registration Form
         </h2>
@@ -124,6 +148,7 @@ const FairPriceShopForm = () => {
                 placeholder="Enter FPS User ID"
                 disabled
                 required
+                onClick={handleCopyToClipboard}
               />
             </div>
 
@@ -224,36 +249,61 @@ const FairPriceShopForm = () => {
               />
             </div>
 
-            {/* Taluka */}
-            <div>
-              <label className="block text-gray-700 font-semibold">
-                Taluka <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                name="taluka"
-                value={fpsData.address.taluka}
-                onChange={handleAddressChange}
-                className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter taluka"
-                required
-              />
-            </div>
-
             {/* District */}
             <div>
               <label className="block text-gray-700 font-semibold">
                 District <span className="text-red-600">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="district"
                 value={fpsData.address.district}
-                onChange={handleAddressChange}
+                onChange={(e) => {
+                  setFpsData({
+                    ...fpsData,
+                    address: { ...fpsData.address, district: e.target.value },
+                  });
+                }}
                 className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter district"
                 required
-              />
+              >
+                <option value="Select Districts" defaultChecked>
+                  Select District
+                </option>
+                {MAHARASHTRA_DISTRICTS.map((district, idx) => (
+                  <option key={idx} value={district}>
+                    {district}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Taluka */}
+            <div>
+              <label className="block text-gray-700 font-semibold">
+                Taluka <span className="text-red-600">*</span>
+              </label>
+              <select
+                name="taluka"
+                value={fpsData.address.taluka}
+                onChange={(e) =>
+                  setFpsData({
+                    ...fpsData,
+                    address: { ...fpsData.address, taluka: e.target.value },
+                  })
+                }
+                className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
+                required
+              >
+                <option value="Select Taluka">Select Taluka</option>
+                {fpsData.address.district &&
+                  MAHARASHTRA_TALUKAS[fpsData.address.district].map(
+                    (taluka, idx) => (
+                      <option key={idx} value={taluka}>
+                        {taluka}
+                      </option>
+                    )
+                  )}
+              </select>
             </div>
 
             {/* State */}

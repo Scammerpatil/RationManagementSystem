@@ -7,6 +7,7 @@ import Address from "@/models/Address";
 import RationCard from "@/models/RationCard";
 import Stock from "@/models/Stock";
 import Application from "@/models/Application";
+import rationCardRequest from "@/middlewares/rationCardRequest";
 
 dbConfig();
 
@@ -60,9 +61,20 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await hashPassword(password as string);
 
     // Upload documents
+    if (!aadhaarFront || !aadhaarBack || !incomeCertificate) {
+      return NextResponse.json(
+        { message: "All document files are required" },
+        { status: 400 }
+      );
+    }
+
     const uploadedDocs = await uploadDocuments(
-      { aadhaarFront, aadhaarBack, incomeCertificate },
-      aadharNumber
+      {
+        aadhaarFront: aadhaarFront as Blob,
+        aadhaarBack: aadhaarBack as Blob,
+        incomeCertificate: incomeCertificate as Blob,
+      },
+      aadharNumber as string
     );
 
     // Create new user
@@ -201,7 +213,7 @@ async function createRationCard(
   const savedStock = await stock.save();
 
   const newRationCard = new RationCard({
-    rationCardNumber: generateRationCardNumber(),
+    rationCardNumber: await generateRationCardNumber(),
     cardType,
     status: "Active",
     head: user._id,
@@ -215,6 +227,9 @@ async function createRationCard(
     rationCard: newRationCard._id,
   });
   await application.save();
+  if (newRationCard) {
+    await rationCardRequest(user.email, newRationCard.populate("head"));
+  }
 }
 
 function determineCardType(income: number): "White" | "Saffron" | "Yellow" {
@@ -274,7 +289,7 @@ function getInitialStock(
   };
 
   const stock = baseStock[cardType];
-  Object.keys(stock).forEach((key) => {
+  (Object.keys(stock) as (keyof typeof stock)[]).forEach((key) => {
     if (key !== "month") {
       stock[key] *= familyMembersCount;
     }

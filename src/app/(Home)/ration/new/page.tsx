@@ -2,6 +2,7 @@
 
 import { Address } from "@/types/Address";
 import { User } from "@/types/User";
+import { MAHARASHTRA_DISTRICTS, MAHARASHTRA_TALUKAS } from "@/utils/Constants";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -399,53 +400,64 @@ const NewRationPage = () => {
               />
             </div>
 
-            {/* Taluka Code */}
-            <div>
-              <label className="block text-gray-700 font-semibold">
-                Taluka
-              </label>
-              <input
-                type="text"
-                name="Taluka"
-                value={address.taluka}
-                onChange={(e) =>
-                  setAddress({ ...address, taluka: e.target.value })
-                }
-                className="mt-2 p-3 block w-full bg-gray-50 text-black border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter Taluka"
-              />
-            </div>
-
             {/* District */}
             <div>
               <label className="block text-gray-700 font-semibold">
                 District
               </label>
-              <input
-                type="text"
+              <select
                 name="District"
                 value={address.district}
                 onChange={(e) =>
                   setAddress({ ...address, district: e.target.value })
                 }
                 className="mt-2 p-3 block w-full bg-gray-50 text-black border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter District"
-              />
+              >
+                <option value="Select Districts"></option>
+                {MAHARASHTRA_DISTRICTS.map((district, idx) => (
+                  <option key={idx} value={district}>
+                    {district}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Taluka Code */}
+            <div>
+              <label className="block text-gray-700 font-semibold">
+                Taluka
+              </label>
+              <select
+                name="Taluka"
+                value={address.taluka}
+                onChange={(e) =>
+                  setAddress({ ...address, taluka: e.target.value })
+                }
+                className="mt-2 p-3 block w-full bg-gray-50 text-black border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
+              >
+                <option value="Select Taluka">Select Taluka</option>
+                {address.district &&
+                  MAHARASHTRA_TALUKAS[address.district].map((taluka, idx) => (
+                    <option key={idx} value={taluka}>
+                      {taluka}
+                    </option>
+                  ))}
+              </select>
             </div>
 
             {/* State Code */}
             <div>
               <label className="block text-gray-700 font-semibold">State</label>
-              <input
-                type="text"
+              <select
                 name="Taluka"
                 value={address.state}
                 onChange={(e) =>
                   setAddress({ ...address, state: e.target.value })
                 }
                 className="mt-2 p-3 block w-full bg-gray-50 text-black border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter Your State"
-              />
+              >
+                <option value="Maharashtra">Maharashtra</option>
+              </select>
             </div>
 
             {/* Pin Code */}

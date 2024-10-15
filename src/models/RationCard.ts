@@ -5,13 +5,6 @@ const RationCardSchema = new Schema({
     type: String,
     required: true,
     unique: true,
-    validate: {
-      validator: function (v: string) {
-        return /^\d{12}$/.test(v);
-      },
-      message: (props: any) =>
-        `${props.value} is not a valid Ration Card number! Ration Card number must be 12 digits.`,
-    },
   },
   cardType: {
     type: String,

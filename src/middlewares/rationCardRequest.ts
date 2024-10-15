@@ -10,16 +10,23 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export default async function POST(email: string): Promise<boolean> {
+export default async function rationCardRequest(
+  email: string,
+  rationCard: any
+): Promise<boolean> {
   const template = fs.readFileSync(
-    "./helper/approvalEmailTemplate.ejs",
+    "./src/helper/rationRequestTemplate.ejs",
     "utf-8"
   );
   const mailOptions = {
     from: "Belogical | No Reply <",
     to: email,
-    subject: "Verify Email",
-    html: ejs.render(template),
+    subject: "Request for new Ration Card",
+    html: ejs.render(template, {
+      userName: rationCard.head.name,
+      rationCardType: rationCard.cardType,
+      applicationNumber: rationCard.rationNumber,
+    }),
   };
   try {
     await new Promise<void>((resolve, reject) => {
