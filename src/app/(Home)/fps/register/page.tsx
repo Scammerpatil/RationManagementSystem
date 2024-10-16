@@ -4,16 +4,17 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 const FairPriceShopForm = () => {
   const [disabled, setDisabled] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState({
     otp: "",
     otpSent: "",
     isVerified: false,
   });
   const [fpsData, setFpsData] = useState({
-    fpsUserId: "",
     fullName: "",
     mobileNumber: "",
     email: "",
@@ -29,10 +30,7 @@ const FairPriceShopForm = () => {
   });
 
   useEffect(() => {
-    setFpsData({
-      ...fpsData,
-      fpsUserId: `FPS-${Math.floor(100000 + Math.random() * 900000)}`,
-    });
+    // Removed fpsUserId generation logic as it's handled in the backend
   }, []);
 
   useEffect(() => {
@@ -52,6 +50,7 @@ const FairPriceShopForm = () => {
       setDisabled(true);
     }
   }, [fpsData, otp]);
+
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,19 +82,6 @@ const FairPriceShopForm = () => {
       },
       error: "Error sending OTP.",
     });
-  };
-
-  const handleCopyToClipboard = () => {
-    if (fpsData.fpsUserId) {
-      navigator.clipboard
-        .writeText(fpsData.fpsUserId)
-        .then(() => {
-          alert("FPS User ID copied to clipboard!");
-        })
-        .catch((err) => {
-          console.error("Failed to copy FPS User ID:", err);
-        });
-    }
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -134,24 +120,6 @@ const FairPriceShopForm = () => {
         >
           {/* Fair Price Shop Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* FPS User ID */}
-            <div>
-              <label className="block text-gray-700 font-semibold">
-                FPS User ID <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                name="fpsUserId"
-                value={fpsData.fpsUserId}
-                onChange={handleChange}
-                className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter FPS User ID"
-                disabled
-                required
-                onClick={handleCopyToClipboard}
-              />
-            </div>
-
             {/* Full Name */}
             <div>
               <label className="block text-gray-700 font-semibold">
@@ -186,19 +154,30 @@ const FairPriceShopForm = () => {
             </div>
 
             {/* Password */}
+            {/* Password */}
             <div>
               <label className="block text-gray-700 font-semibold">
                 Password <span className="text-red-600">*</span>
               </label>
-              <input
-                type="password"
-                name="password"
-                value={fpsData.password}
-                onChange={handleChange}
-                className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter full name"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"} // Toggle password visibility
+                  name="password"
+                  value={fpsData.password}
+                  onChange={handleChange}
+                  className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300 pr-10" // Add padding to the right for the icon
+                  placeholder="Enter password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2" // Position the icon
+                  onClick={() => setShowPassword(!showPassword)} // Toggle showPassword state
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}{" "}
+                  {/* Toggle icon */}
+                </button>
+              </div>
             </div>
 
             {/* Email */}
@@ -370,7 +349,7 @@ const FairPriceShopForm = () => {
               className="w-50 rounded-sm border border-stroke bg-base-300 px-6 py-3 text-base-content outline-none transition-all duration-300 focus:border-primary"
             />
             <button
-              type="button"
+              type="button" // Changed to "button" to prevent form submission
               className="w-50 rounded-sm border border-stroke bg-accent text-accent-content px-6 py-3 outline-none transition-all duration-300 focus:border-primary"
               onClick={() => {
                 if (otp.otp === otp.otpSent) {
