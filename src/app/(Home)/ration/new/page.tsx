@@ -24,6 +24,7 @@ const NewRationPage = () => {
     bankName: "",
     accountNumber: "",
     ifscCode: "",
+    isHead: true,
   });
   const [files, setFiles] = useState({
     aadhaarFront: null,

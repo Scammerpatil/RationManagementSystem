@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import ejs from "ejs";
 import fs from "fs";
+import { RationCard } from "@/types/RationCard";
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -10,16 +11,24 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export default async function POST(email: string): Promise<boolean> {
+export default async function approvalEmail(
+  email: string,
+  rationCard: RationCard
+): Promise<boolean> {
   const template = fs.readFileSync(
-    "./helper/approvalEmailTemplate.ejs",
+    "./src/helper/approvalEmailTemplate.ejs",
     "utf-8"
   );
+
+  const userName = rationCard.head.fullName;
+  const rationCardNumber = rationCard.rationCardNumber;
+  const rationCardType = rationCard.cardType;
+
   const mailOptions = {
     from: "Belogical | No Reply <",
     to: email,
     subject: "Verify Email",
-    html: ejs.render(template),
+    html: ejs.render(template, { userName, rationCardNumber, rationCardType }),
   };
   try {
     await new Promise<void>((resolve, reject) => {

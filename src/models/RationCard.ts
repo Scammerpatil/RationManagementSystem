@@ -13,7 +13,7 @@ const RationCardSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ["Active", "Suspended", "Canceled"],
+    enum: ["Active", "Suspended", "Canceled", "Pending"],
     required: true,
     default: "Active",
   },

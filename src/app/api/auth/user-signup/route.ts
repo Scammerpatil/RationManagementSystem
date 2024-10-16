@@ -107,6 +107,7 @@ export async function POST(req: NextRequest) {
         ifscCode,
         password: hashedPassword,
         uploadedDocs,
+        isHead: true,
       },
       session
     );

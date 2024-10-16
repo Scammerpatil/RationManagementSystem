@@ -34,6 +34,12 @@ const FairPriceShopSchema = new Schema(
       required: true,
       unique: true,
     },
+    rationUnder: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "RationCard",
+      },
+    ],
     stock: [
       {
         type: mongoose.Schema.Types.ObjectId,

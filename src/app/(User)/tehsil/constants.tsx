@@ -9,6 +9,11 @@ import { SideNavItem } from "@/types/types";
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
+    title: "Tehsil Dashboard",
+    path: "/tehsil/dashboard",
+    icon: <HomeIcon width="24" height="24" />,
+  },
+  {
     title: "Approve Ration Card Request",
     path: "/tehsil/approve-ration-card",
     icon: <CheckSquare width="24" height="24" />,
@@ -22,11 +27,6 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
     title: "Distribute Stock to FPS",
     path: "/tehsil/distribute-stock",
     icon: <FileCheck width="24" height="24" />,
-  },
-  {
-    title: "Tehsil Dashboard",
-    path: "/tehsil/dashboard",
-    icon: <HomeIcon width="24" height="24" />,
   },
   {
     title: "Help",

@@ -13,6 +13,13 @@ const TehsilSchema = new Schema(
       required: true,
       unique: true,
     },
+    pincode: {
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
+      match: /^[1-9][0-9]{5}$/,
+    },
     password: {
       type: String,
       required: true,

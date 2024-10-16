@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
       .populate("head")
       .populate("members")
       .populate("address");
-    console.log(rationCard);
     if (!rationCard) {
       return NextResponse.json(
         { error: "Ration card not found" },

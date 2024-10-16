@@ -1,4 +1,5 @@
 export type RationCard = {
+  _id: ObjectId;
   rationCardNumber: string;
   cardType: "White" | "Saffron" | "Yellow";
   status: "Active" | "Suspended" | "Canceled";
@@ -7,4 +8,5 @@ export type RationCard = {
   address: ObjectId;
   fpsId?: ObjectId;
   stock: ObjectId;
+  isAdminApproved: boolean;
 };
