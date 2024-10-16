@@ -7,6 +7,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 const NewRationPage = () => {
   const [user, setUser] = useState<User>({
@@ -42,6 +43,7 @@ const NewRationPage = () => {
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState("");
   const [otpVerified, setOtpVerified] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   useEffect(() => {
     if (
@@ -81,6 +83,9 @@ const NewRationPage = () => {
     });
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!files.aadhaarFront || !files.aadhaarBack || !files.incomeCertificate) {
@@ -475,19 +480,30 @@ const NewRationPage = () => {
               />
             </div>
             {/* Password */}
-            <div>
+            <div className="relative">
               <label className="block text-gray-700 font-semibold">
                 Password <span className="text-red-600">*</span>
               </label>
-              <input
-                type="password"
-                name="password"
-                required
-                value={user.password}
-                onChange={(e) => setUser({ ...user, password: e.target.value })}
-                className="mt-2 p-3 block w-full bg-gray-50 text-black border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter Password"
-              />
+              <div className="relative mt-2">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  required
+                  value={user.password}
+                  onChange={(e) =>
+                    setUser({ ...user, password: e.target.value })
+                  }
+                  className="p-3 block w-full bg-gray-50 text-black border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
+                  placeholder="Enter Password"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-3 flex items-center justify-center h-full"
+                >
+                  {showPassword ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
             </div>
 
             {/* Aadhaar Front Photo */}
