@@ -7,6 +7,7 @@ const AddFamilyMembers: React.FC = () => {
       fullName: "",
       gender: "",
       relationship: "",
+      aadharNumber: "", // Added Aadhaar Number field
       aadharFrontCardUrl: "",
       aadharBackCardUrl: "",
     },
@@ -19,6 +20,7 @@ const AddFamilyMembers: React.FC = () => {
         fullName: "",
         gender: "",
         relationship: "",
+        aadharNumber: "", // Added Aadhaar Number field
         aadharFrontCardUrl: "",
         aadharBackCardUrl: "",
       },
@@ -82,6 +84,24 @@ const AddFamilyMembers: React.FC = () => {
                   className="mt-2 p-3 block w-full border border-gray-300 bg-gray-50 text-black rounded-lg shadow-sm"
                   placeholder="Enter full name"
                   required
+                />
+              </div>
+
+              {/* Aadhaar Number */}
+              <div>
+                <label className="block text-gray-700 font-semibold">
+                  Aadhaar Number <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="aadharNumber"
+                  value={member.aadharNumber}
+                  onChange={(e) => handleInputChange(index, e)}
+                  className="mt-2 p-3 block w-full border border-gray-300 bg-gray-50 text-black rounded-lg shadow-sm"
+                  placeholder="Enter Aadhaar number"
+                  required
+                  pattern="\d{12}"
+                  title="Aadhaar number must be a 12-digit number"
                 />
               </div>
 
