@@ -25,6 +25,6 @@ export async function GET(req: NextRequest) {
     }
     return NextResponse.json({ user, rationCard });
   } catch (err) {
-    NextResponse.json({ err });
+    return NextResponse.json({ err });
   }
 }

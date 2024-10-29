@@ -58,6 +58,8 @@ export async function POST(req: NextRequest) {
 
     const newStock = new Stock(initialStock);
     const savedStock = await newStock.save();
+    const remainingStock = new Stock(initialStock);
+    const savedRemainingStock = await remainingStock.save();
 
     const fpsShopNumber = await generateFPSShopNumber(taluka);
 
@@ -71,6 +73,7 @@ export async function POST(req: NextRequest) {
       password: hashedPassword,
       address: savedAddress._id,
       stock: savedStock._id,
+      remainingStock: savedRemainingStock._id,
     });
     await newFps.save();
 

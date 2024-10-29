@@ -8,6 +8,7 @@ dbConfig();
 
 export async function POST(req: NextRequest) {
   const { taluka } = await req.json();
+  console.log(taluka);
   User;
   try {
     const temp = await RationCard.find().populate("address").populate("head");

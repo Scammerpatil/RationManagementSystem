@@ -1,15 +1,23 @@
 "use client";
+import { useUser } from "@/context/UserContext";
+import axios from "axios";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 const AddFamilyMembers: React.FC = () => {
+  const { user } = useUser();
   const [members, setMembers] = useState([
     {
       fullName: "",
       gender: "",
       relationship: "",
       aadharNumber: "",
-      aadharFrontCardUrl: "",
-      aadharBackCardUrl: "",
+      dob: "",
+      email: "",
+      mobileNumber: "",
+      occupation: "",
+      aadhaarFrontCardUrl: "",
+      aadhaarBackCardUrl: "",
     },
   ]);
 
@@ -21,8 +29,12 @@ const AddFamilyMembers: React.FC = () => {
         gender: "",
         relationship: "",
         aadharNumber: "",
-        aadharFrontCardUrl: "",
-        aadharBackCardUrl: "",
+        dob: "",
+        email: "",
+        mobileNumber: "",
+        occupation: "",
+        aadhaarFrontCardUrl: "",
+        aadhaarBackCardUrl: "",
       },
     ]);
   };
@@ -39,12 +51,32 @@ const AddFamilyMembers: React.FC = () => {
 
   const handleFileChange = (
     index: number,
-    name: "aadharFrontCardUrl" | "aadharBackCardUrl",
+    name: "aadhaarFrontCardUrl" | "aadhaarBackCardUrl",
     file: File | null
   ) => {
-    const updatedMembers = [...members];
-    updatedMembers[index] = { ...updatedMembers[index], [name]: file };
-    setMembers(updatedMembers);
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", name.split("Url")[0]);
+    if (members[index].aadharNumber === "")
+      return toast.error("Please enter Aadhaar number first!");
+    formData.append("aadharNumber", members[index].aadharNumber);
+
+    toast.promise(axios.post("/api/helper/add-file", formData), {
+      loading: "Uploading file...",
+      success: (data: { data: { secure_url: string } }) => {
+        const updatedMembers = [...members];
+        console.log(data.data.secure_url);
+        updatedMembers[index] = {
+          ...updatedMembers[index],
+          [name]: data.data.secure_url,
+        };
+        setMembers(updatedMembers);
+        console.log(members);
+        return "File uploaded successfully!";
+      },
+      error: "Failed to upload file!",
+    });
   };
 
   const handleRemoveMember = (index: number) => {
@@ -54,7 +86,16 @@ const AddFamilyMembers: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(members); // Replace this with your form submission logic
+    const data = {
+      user,
+      members,
+    };
+    const reponse = axios.post("/api/user/add-member", data);
+    toast.promise(reponse, {
+      loading: "Adding members...",
+      success: "Members added successfully!",
+      error: "Failed to add members!",
+    });
   };
 
   return (
@@ -100,8 +141,56 @@ const AddFamilyMembers: React.FC = () => {
                   className="mt-2 p-3 block w-full border border-gray-300 bg-gray-50 text-black rounded-lg shadow-sm"
                   placeholder="Enter Aadhaar number"
                   required
+                  maxLength={12}
                   pattern="\d{12}"
                   title="Aadhaar number must be a 12-digit number"
+                />
+              </div>
+
+              {/* Date of Birth */}
+              <div>
+                <label className="block text-gray-700 font-semibold">
+                  Date of Birth <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="dob"
+                  value={member.dob}
+                  onChange={(e) => handleInputChange(index, e)}
+                  className="mt-2 p-3 block w-full border border-gray-300 bg-gray-50 text-black rounded-lg shadow-sm"
+                  required
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-gray-700 font-semibold">
+                  Email <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={member.email}
+                  onChange={(e) => handleInputChange(index, e)}
+                  className="mt-2 p-3 block w-full border border-gray-300 bg-gray-50 text-black rounded-lg shadow-sm"
+                  placeholder="Enter email"
+                  required
+                />
+              </div>
+
+              {/* Mobile Number */}
+              <div>
+                <label className="block text-gray-700 font-semibold">
+                  Mobile Number
+                </label>
+                <input
+                  type="text"
+                  name="mobileNumber"
+                  value={member.mobileNumber}
+                  onChange={(e) => handleInputChange(index, e)}
+                  className="mt-2 p-3 block w-full border border-gray-300 bg-gray-50 text-black rounded-lg shadow-sm"
+                  placeholder="Enter mobile number"
+                  maxLength={10}
                 />
               </div>
 
@@ -147,6 +236,21 @@ const AddFamilyMembers: React.FC = () => {
                 </select>
               </div>
 
+              {/* Occupation */}
+              <div>
+                <label className="block text-gray-700 font-semibold">
+                  Occupation
+                </label>
+                <input
+                  type="text"
+                  name="occupation"
+                  value={member.occupation}
+                  onChange={(e) => handleInputChange(index, e)}
+                  className="mt-2 p-3 block w-full border border-gray-300 bg-gray-50 text-black rounded-lg shadow-sm"
+                  placeholder="Enter occupation"
+                />
+              </div>
+
               {/* Aadhaar Front Card */}
               <div>
                 <label className="block text-gray-700 font-semibold">
@@ -155,11 +259,12 @@ const AddFamilyMembers: React.FC = () => {
                 <input
                   type="file"
                   name="aadharFrontCardUrl"
+                  disabled={member.aadharNumber === "" ? true : false}
                   accept=".jpg, .jpeg, .png, .pdf"
                   onChange={(e) =>
                     handleFileChange(
                       index,
-                      "aadharFrontCardUrl",
+                      "aadhaarFrontCardUrl",
                       e.target.files ? e.target.files[0] : null
                     )
                   }
@@ -174,13 +279,14 @@ const AddFamilyMembers: React.FC = () => {
                   Aadhaar Back Card <span className="text-red-600">*</span>
                 </label>
                 <input
+                  disabled={member.aadharNumber === "" ? true : false}
                   type="file"
                   name="aadharBackCardUrl"
                   accept=".jpg, .jpeg, .png, .pdf"
                   onChange={(e) =>
                     handleFileChange(
                       index,
-                      "aadharBackCardUrl",
+                      "aadhaarBackCardUrl",
                       e.target.files ? e.target.files[0] : null
                     )
                   }

@@ -1,7 +1,8 @@
 "use client";
 import RationCardDetails from "@/components/RationCardDetails";
-import useUser from "@/hooks/useUser";
+import { useUser } from "@/context/UserContext";
 import { RationCard } from "@/types/RationCard";
+import { Tehsil } from "@/types/Tehsil";
 import axios from "axios";
 import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -9,32 +10,22 @@ import toast from "react-hot-toast";
 
 const ApproveRationCardPage = () => {
   const [rationCardList, setRationCardList] = useState<RationCard[]>([]);
-  const [tehsil, setTehsil] = useState("");
   const [rationCard, setRationCard] = useState<RationCard>();
-  const [filter, setFilter] = useState<"Pending" | "Approved">("Pending"); // Filter state
-  const user = useUser();
+  const [filter, setFilter] = useState<"Pending" | "Approved">("Pending");
+  const { user } = useUser();
 
   useEffect(() => {
+    console.log(user as Tehsil);
     if (user) {
       axios
-        .post("/api/tehsil/getTehsil", { tehsilId: user.tehsilId })
-        .then((res) => {
-          setTehsil(res.data);
-        });
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (tehsil) {
-      axios
         .post("/api/rationcard/getRationCardByTehsil", {
-          taluka: tehsil.address.taluka,
+          taluka: (user as Tehsil).address.taluka,
         })
         .then((res) => {
           setRationCardList(res.data);
         });
     }
-  }, [tehsil]);
+  }, [user]);
 
   const handleApproval = async (
     rationCardId: string,
@@ -126,7 +117,7 @@ const ApproveRationCardPage = () => {
             </thead>
             <tbody>
               {filteredRationCardList.map((card) => (
-                <tr key={card._id}>
+                <tr key={card.rationCardNumber}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {card.rationCardNumber}
                   </td>

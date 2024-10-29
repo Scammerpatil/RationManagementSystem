@@ -36,12 +36,10 @@ const TehsilSchema = new Schema(
         ref: "Officer",
       },
     ],
-    stock: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Stock",
-      },
-    ],
+    stock: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Stock",
+    },
     transactions: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Transaction" },
     ],

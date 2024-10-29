@@ -69,7 +69,6 @@ const UserSchema = new Schema(
     },
     income: {
       type: Number,
-      required: true,
     },
     bankName: {
       type: String,
@@ -97,7 +96,6 @@ const UserSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
     },
   },
   {

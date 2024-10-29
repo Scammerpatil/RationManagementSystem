@@ -1,6 +1,5 @@
-// pages/api/tehsil/register.ts
 import bcrypt from "bcryptjs";
-import Tehsil from "@/models/Tehsil"; // Ensure this path is correct
+import Tehsil from "@/models/Tehsil";
 import { NextRequest, NextResponse } from "next/server";
 import dbConfig from "@/middlewares/db.config";
 import Address from "@/models/Address";
@@ -11,6 +10,7 @@ dbConfig();
 export async function POST(req: NextRequest) {
   const { tehsilUserId, password, address } = await req.json();
   const { street, taluka, district, state, pincode } = address;
+  console.log("Address Pincode:", pincode);
 
   const newAddress = new Address({
     street,
@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       address: savedAddress._id,
       fpsShopUnder: [],
       officers: [],
+      pincode: savedAddress.pincode,
       stock: savedStock._id,
       transactions: [],
       allocatedStock: [],

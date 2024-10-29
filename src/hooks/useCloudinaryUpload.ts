@@ -4,7 +4,7 @@ import { cloudinary } from "@/middlewares/cloudinary.config";
 const useCloudinaryUpload = async (
   fileStream: Buffer,
   folder: string,
-  filename: string,
+  filename: string
 ) => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader
@@ -20,7 +20,7 @@ const useCloudinaryUpload = async (
           } else {
             resolve(result);
           }
-        },
+        }
       )
       .end(fileStream);
   });

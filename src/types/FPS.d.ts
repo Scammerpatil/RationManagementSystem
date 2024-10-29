@@ -1,18 +1,17 @@
-import { Types } from "mongoose";
+import { ObjectId } from "mongoose";
 
-export type FairPriceShop = {
-  _id: Types.ObjectId;
+export interface FairPriceShop {
   fpsUserId: string;
   fullName: string;
   mobileNumber: string;
   email: string;
-  role: string;
-  address: Types.ObjectId; // Reference to Address schema
+  role: "fps" | string;
+  address: ObjectId;
   pincode: string;
-  stock: Types.ObjectId[]; // Array of references to Stock schema
-  transactions: Types.ObjectId[]; // Array of references to Transaction schema
+  rationUnder: ObjectId[];
+  stock: ObjectId;
+  remainingStock: ObjectId;
+  transactions: ObjectId[];
   isAdminApproved: boolean;
   password: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+}

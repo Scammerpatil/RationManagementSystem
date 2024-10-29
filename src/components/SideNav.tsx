@@ -7,6 +7,10 @@ import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useUser } from "@/context/UserContext";
+import { FairPriceShop } from "@/types/FPS";
+import { Tehsil } from "@/types/Tehsil";
+import { RationCard } from "@/types/RationCard";
+import { User } from "@/types/User";
 
 const SideNav = ({
   userRole,
@@ -18,8 +22,9 @@ const SideNav = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
-  const { user } = useUser();
-  console.log("from SideNav:", user);
+  const { user, userType } = useUser();
+  const pathname = usePathname();
+  const pathSegments = pathname.split("/").filter(Boolean);
 
   const handleLogout = async () => {
     try {
@@ -31,8 +36,16 @@ const SideNav = ({
     }
   };
 
-  const pathname = usePathname();
-  const pathSegments = pathname.split("/").filter(Boolean);
+  const getDisplayName = () => {
+    if (userType === "RationCard" && "head" in user!) {
+      return (user.head as User)?.fullName || "Unknown RationCard User";
+    } else if (userType === "FairPriceShop" && "fullName" in user!) {
+      return user.fullName || "Unknown FPS User";
+    } else if (userType === "Tehsil" && "tehsilUserId" in user!) {
+      return user.tehsilUserId || "Unknown Tehsil User";
+    }
+    return "Unknown User";
+  };
 
   return (
     <>
@@ -101,12 +114,12 @@ const SideNav = ({
                     >
                       <div className="flex items-center justify-center mb-2">
                         <div className="flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full text-xl font-bold">
-                          {!user?.head?.fullName}
+                          {String(getDisplayName()).charAt(0)}
                         </div>
                       </div>
                       <div className="flex items-center justify-center">
                         <span className="text-lg font-semibold text-gray-900">
-                          {user?.head?.fullName || user?.ownerName}
+                          {getDisplayName() as React.ReactNode}
                         </span>
                       </div>
                       <hr className="my-2 border-gray-300" />
@@ -170,7 +183,7 @@ const SideNav = ({
               </span>
             </Link>
             <div className="flex flex-col space-y-2 mt-10 md:px-6">
-              {filteredSidebar.map((item, idx) => (
+              {sidebar.map((item, idx) => (
                 <MenuItem key={idx} item={item} />
               ))}
             </div>
@@ -217,18 +230,18 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
             </div>
           </button>
           {subMenuOpen && (
-            <div className="my-2 ml-4 flex flex-col space-y-4">
-              {item.subMenuItems?.map((subItem, idx) => (
-                <Link
-                  key={idx}
-                  href={subItem.path}
-                  className={`block rounded-lg p-2 text-base ${
-                    subItem.path === pathname
-                      ? "font-semibold text-gray-900"
-                      : "text-gray-600"
-                  } hover:bg-gray-200`}
-                >
-                  <span>{subItem.title}</span>
+            <div className="mt-1 space-y-1">
+              {item.submenu.map((subitem, idx) => (
+                <Link key={idx} href={subitem.path}>
+                  <span
+                    className={`block w-full text-left text-lg p-2 pl-10 ${
+                      pathname === subitem.path
+                        ? activeClasses
+                        : inactiveClasses
+                    }`}
+                  >
+                    {subitem.title}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -237,12 +250,14 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
       ) : (
         <Link
           href={item.path}
-          className={`flex flex-row items-center space-x-4 rounded-lg p-2 ${
-            item.path === pathname ? "font-semibold text-gray-900" : ""
+          className={`${baseClasses} ${
+            pathname === item.path ? activeClasses : inactiveClasses
           }`}
         >
-          {item.icon}
-          <span className="text-lg">{item.title}</span>
+          <div className="flex flex-row items-center space-x-4">
+            {item.icon}
+            <span className="text-lg font-medium">{item.title}</span>
+          </div>
         </Link>
       )}
     </div>

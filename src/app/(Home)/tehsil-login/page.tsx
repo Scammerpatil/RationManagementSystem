@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { EyeOff, Eye } from "lucide-react";
+import { useUser } from "@/context/UserContext";
 
 const TehsilLogin = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const TehsilLogin = () => {
   const [disabled, setDisabled] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { user, setUser } = useUser();
 
   // Generate Captcha
   const generateCaptcha = () => {
@@ -61,7 +63,7 @@ const TehsilLogin = () => {
       loading: "Logging in...",
       success: (data) => {
         const user = data.data.user;
-        localStorage.setItem("user", JSON.stringify(user));
+
         router.push("/tehsil/dashboard");
         return data.data.message;
       },

@@ -4,11 +4,15 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "@/app/assets/logo.png";
 import Link from "next/link";
-import useUser from "@/hooks/useUser";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useUser } from "@/context/UserContext";
+import { RationCard } from "@/types/RationCard";
+import { FairPriceShop } from "@/types/FPS";
 
-const Header = ({ user, router }) => {
+const Header = () => {
+  const { user } = useUser();
+  const router = useRouter();
   const handleLogout = async () => {
     try {
       await axios.get("/api/auth/logout");
@@ -59,8 +63,10 @@ const Header = ({ user, router }) => {
                 {/* User Initial */}
                 <div className="flex items-center justify-center mb-2">
                   <div className="flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full text-xl font-bold">
-                    {(user && user.head?.fullName?.split(" ")[0][0]) ||
-                      (user && user.ownerName?.split(" ")[0][0])}
+                    {(user &&
+                      (user as RationCard).head?.fullName?.split(" ")[0][0]) ||
+                      (user &&
+                        (user as FairPriceShop).fullName?.split(" ")[0][0])}
                   </div>
                 </div>
 

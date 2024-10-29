@@ -1,107 +1,112 @@
 "use client";
 import { useUser } from "@/context/UserContext";
+import { RationCard } from "@/types/RationCard";
+import { FC } from "react";
 
-const UserDashboard: React.FC = () => {
-  const { user, setUser } = useUser();
+const UserDashboard: FC = () => {
+  const { user } = useUser() as { user: RationCard };
 
   return (
     <div className="p-10 bg-white rounded-lg">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Ration Card Management Dashboard
       </h1>
-      <p>{}</p>
 
       {/* Ration Card Overview */}
-      <div className="p-5 rounded-lg shadow-lg mb-6 ">
+      <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Ration Card Overview</h2>
         <p>
-          <strong>Ration Card Number:</strong> {user!.rationCardNumber}
+          <strong>Ration Card Number:</strong> {user?.rationCardNumber || "N/A"}
         </p>
         <p>
-          <strong>Card Type:</strong> {rationCard.cardType}
+          <strong>Card Type:</strong> {user?.cardType || "N/A"}
         </p>
         <p>
-          <strong>Head of Family:</strong> {rationCard.head.fullName}
+          <strong>Head of Family:</strong> {user?.head?.fullName || "N/A"}
         </p>
         <p>
-          <strong>Income:</strong> {rationCard.head.income}
+          <strong>Income:</strong> {user?.head?.income || "N/A"}
         </p>
         <p>
-          <strong>Caste Category:</strong> {rationCard.head.casteCategory}
+          <strong>Caste Category:</strong> {user?.head?.caste || "N/A"}
         </p>
         <p>
-          <strong>Address:</strong> {rationCard.address.street},{" "}
-          {rationCard.address.district}, {rationCard.address.state},{" "}
-          {rationCard.address.pincode}
+          <strong>Address:</strong> {user?.address?.street || "N/A"},{" "}
+          {user?.address?.district || "N/A"}, {user?.address?.state || "N/A"},{" "}
+          {user?.address?.pincode || "N/A"}
         </p>
       </div>
 
       {/* Family Members */}
-      {/* <div className="p-5 rounded-lg shadow-lg mb-6">
+      <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Family Members</h2>
         <ul className="list-disc ml-5">
-          {user.familyMembers.map((member, index) => (
-            <li key={index}>
-              {member.name} - {member.role}
-            </li>
-          ))}
+          {user?.members && user.members.length > 0 ? (
+            user.members.map((member, index) => (
+              <li key={index}>
+                {member.fullName || "Unnamed Member"} -{" "}
+                {member.role || "Role Unspecified"}
+              </li>
+            ))
+          ) : (
+            <p>No Members Added</p>
+          )}
         </ul>
-      </div> */}
+      </div>
 
       {/* Stock Allocation */}
-      {/* <div className="p-5 rounded-lg shadow-lg mb-6">
+      <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Stock Allocation</h2>
-        <ul>
-          <li>
-            <strong>Wheat:</strong> {user.stockAllocation.wheat}
-          </li>
-          <li>
-            <strong>Rice:</strong> {user.stockAllocation.rice}
-          </li>
-          <li>
-            <strong>Sugar:</strong> {user.stockAllocation.sugar}
-          </li>
-          <li>
-            <strong>Oil:</strong> {user.stockAllocation.oil}
-          </li>
-        </ul>
-      </div> */}
+        {user?.stock ? (
+          <ul>
+            <li>
+              <strong>Wheat:</strong> {user.stock.wheat || "N/A"}
+            </li>
+            <li>
+              <strong>Rice:</strong> {user.stock.rice || "N/A"}
+            </li>
+            <li>
+              <strong>Sugar:</strong> {user.stock.sugar || "N/A"}
+            </li>
+            <li>
+              <strong>Oil:</strong> {user.stock.oil || "N/A"}
+            </li>
+          </ul>
+        ) : (
+          <p>No Stock Allocation Data</p>
+        )}
+      </div>
 
       {/* Recent Transactions */}
-      {/* <div className="p-5 rounded-lg shadow-lg mb-6">
+      <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
-        {user.recentTransactions.map((transaction, index) => (
-          <div key={index} className="mb-3">
-            <p>
-              <strong>Date:</strong> {transaction.date}
-            </p>
-            <ul>
-              <li>
-                <strong>Wheat:</strong> {transaction.wheat}
-              </li>
-              <li>
-                <strong>Rice:</strong> {transaction.rice}
-              </li>
-              <li>
-                <strong>Sugar:</strong> {transaction.sugar}
-              </li>
-              <li>
-                <strong>Oil:</strong> {transaction.oil}
-              </li>
-            </ul>
-          </div>
-        ))}
-      </div> */}
-
-      {/* Notifications/Updates */}
-      {/* <div className="p-5 rounded-lg shadow-lg mb-6">
-        <h2 className="text-xl font-semibold mb-4">Notifications/Updates</h2>
-        <ul className="list-disc ml-5">
-          {user.notifications.map((notification, index) => (
-            <li key={index}>{notification}</li>
-          ))}
-        </ul>
-      </div> */}
+        {user?.transactions && user.transactions.length > 0 ? (
+          user.transactions.map((transaction, index) => (
+            <div key={index} className="mb-3">
+              <p>
+                <strong>Date:</strong>{" "}
+                {new Date(transaction.date).getTime() || "N/A"}
+              </p>
+              <ul>
+                <li>
+                  <strong>Wheat:</strong> {transaction.stock.wheat || "N/A"}
+                </li>
+                <li>
+                  <strong>Rice:</strong> {transaction.stock.rice || "N/A"}
+                </li>
+                <li>
+                  <strong>Sugar:</strong> {transaction.stock.sugar || "N/A"}
+                </li>
+                <li>
+                  <strong>Oil:</strong> {transaction.stock.oil || "N/A"}
+                </li>
+              </ul>
+            </div>
+          ))
+        ) : (
+          <p>No Recent Transactions</p>
+        )}
+      </div>
 
       {/* Actions */}
       <div className="p-5 rounded-lg shadow-lg mb-6">

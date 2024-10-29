@@ -1,7 +1,8 @@
 "use client";
 import FPSDetails from "@/components/FPSDetails";
-import useUser from "@/hooks/useUser";
+import { useUser } from "@/context/UserContext";
 import { FairPriceShop } from "@/types/FPS";
+import { Tehsil } from "@/types/Tehsil";
 import axios from "axios";
 import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -11,29 +12,19 @@ const VerifyFPSPage = () => {
   const [fpsList, setFPSList] = useState<FairPriceShop[]>([]);
   const [tehsil, setTehsil] = useState("");
   const [fps, setFPS] = useState<FairPriceShop>();
-  const user = useUser();
+  const { user } = useUser();
 
   useEffect(() => {
     if (user) {
       axios
-        .post("/api/tehsil/getTehsil", { tehsilId: user.tehsilId })
-        .then((res) => {
-          setTehsil(res.data);
-        });
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (tehsil) {
-      axios
         .post("/api/fps/getFPSByTehsil", {
-          taluka: tehsil.address.taluka,
+          taluka: (user as Tehsil).address.taluka,
         })
         .then((res) => {
           setFPSList(res.data);
         });
     }
-  }, [tehsil]);
+  }, []);
 
   const handleApproval = async (
     fpsId: string,

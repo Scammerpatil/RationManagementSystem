@@ -1,11 +1,18 @@
 "use client";
 import { FairPriceShop } from "@/types/FPS";
 import { RationCard } from "@/types/RationCard";
+import { Tehsil } from "@/types/Tehsil";
 import { createContext, useState, useContext, ReactNode, Context } from "react";
 
+type UserType = "RationCard" | "FairPriceShop" | "Tehsil" | null;
+
 interface UserContextProps {
-  user: RationCard | FairPriceShop;
-  setUser: (user: RationCard | FairPriceShop) => void;
+  user: RationCard | FairPriceShop | Tehsil | null;
+  userType: UserType;
+  setUser: (
+    user: RationCard | FairPriceShop | Tehsil | null,
+    type: UserType
+  ) => void;
 }
 
 const UserContext: Context<UserContextProps | undefined> = createContext<
@@ -15,14 +22,21 @@ const UserContext: Context<UserContextProps | undefined> = createContext<
 export const UserProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<RationCard | FairPriceShop>();
-  const handleSetUser = (newUser: RationCard | FairPriceShop) => {
-    console.log("Setting user:", newUser);
+  const [user, setUser] = useState<RationCard | FairPriceShop | Tehsil | null>(
+    null
+  );
+  const [userType, setUserType] = useState<UserType>(null);
+
+  const handleSetUser = (
+    newUser: RationCard | FairPriceShop | Tehsil | null,
+    type: UserType
+  ) => {
     setUser(newUser);
+    setUserType(type);
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser: handleSetUser }}>
+    <UserContext.Provider value={{ user, userType, setUser: handleSetUser }}>
       {children}
     </UserContext.Provider>
   );

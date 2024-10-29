@@ -33,7 +33,9 @@ const RationCardModal = ({ rationCard }: { rationCard: RationCard }) => {
                   {rationCard.members.map((member, index) => (
                     <li key={index}>
                       <span className="font-medium">{member.fullName}</span>{" "}
-                      {member.age && <span>- Age: {member.age}</span>}
+                      {member.dob && (
+                        <span>- Age: {new Date(member.dob).toISOString()}</span>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -63,7 +65,7 @@ const RationCardModal = ({ rationCard }: { rationCard: RationCard }) => {
                   </div>
                   <div>
                     <span className="font-bold">City:</span>{" "}
-                    <span>{rationCard.address.city || "N/A"}</span>
+                    <span>{rationCard.address.district || "N/A"}</span>
                   </div>
                   <div>
                     <span className="font-bold">State:</span>{" "}
@@ -71,7 +73,7 @@ const RationCardModal = ({ rationCard }: { rationCard: RationCard }) => {
                   </div>
                   <div>
                     <span className="font-bold">Pincode:</span>{" "}
-                    <span>{rationCard.address.postalCode || "N/A"}</span>
+                    <span>{rationCard.address.pincode || "N/A"}</span>
                   </div>
                 </div>
               ) : (
