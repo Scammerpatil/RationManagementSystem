@@ -6,21 +6,24 @@ import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useUser } from "@/context/UserContext";
 
 const SideNav = ({
-  user,
+  userRole,
   sidebar,
   children,
 }: {
-  user: any;
+  userRole: string;
   sidebar: SideNavItem[];
   children: React.ReactNode;
 }) => {
   const router = useRouter();
+  const { user } = useUser();
+  console.log("from SideNav:", user);
+
   const handleLogout = async () => {
     try {
       await axios.get("/api/auth/logout");
-      localStorage.removeItem("user");
       toast.success("Logged out successfully");
       router.push("/");
     } catch (error) {
@@ -72,13 +75,11 @@ const SideNav = ({
                 <AlignJustify className="h-6 w-6" />
               </label>
             </div>
-
             <div className="flex-1 justify-between lg:hidden px-2">
               <h1 className="text-xl font-bold text-gray-900">
                 Ration Management System
               </h1>
             </div>
-
             <div className="block">
               <ul className="menu menu-horizontal">
                 <div className="flex items-center gap-4 bg-transparent">
@@ -89,11 +90,7 @@ const SideNav = ({
                     data-theme="cupcake"
                   >
                     <img
-                      src={
-                        user?.profileImageUrl
-                          ? user.profileImageUrl
-                          : "https://avatar.iran.liara.run/public"
-                      }
+                      src={"https://avatar.iran.liara.run/public"}
                       alt="Avatar"
                       className="h-12 w-12 rounded-full"
                     />
@@ -102,26 +99,17 @@ const SideNav = ({
                       className="dropdown-content menu bg-white text-black rounded-box z-[999] w-72 p-2 shadow"
                       data-theme="cupcake"
                     >
-                      {/* User Initial */}
                       <div className="flex items-center justify-center mb-2">
                         <div className="flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full text-xl font-bold">
-                          {user?.head?.fullName
-                            ? user.head.fullName.split(" ")[0][0]
-                            : user?.ownerName?.split(" ")[0][0]}
+                          {!user?.head?.fullName}
                         </div>
                       </div>
-
-                      {/* User Name */}
                       <div className="flex items-center justify-center">
                         <span className="text-lg font-semibold text-gray-900">
                           {user?.head?.fullName || user?.ownerName}
                         </span>
                       </div>
-
-                      {/* Horizontal Rule */}
                       <hr className="my-2 border-gray-300" />
-
-                      {/* Dropdown Items */}
                       <div className="flex flex-col">
                         <button
                           onClick={() => router.push("/account")}
@@ -150,7 +138,6 @@ const SideNav = ({
           </div>
           <div className="px-10 py-7 min-h-screen text-black">{children}</div>
         </div>
-
         <div className="drawer-side">
           <label
             htmlFor="my-drawer-3"
@@ -183,7 +170,7 @@ const SideNav = ({
               </span>
             </Link>
             <div className="flex flex-col space-y-2 mt-10 md:px-6">
-              {sidebar.map((item, idx) => (
+              {filteredSidebar.map((item, idx) => (
                 <MenuItem key={idx} item={item} />
               ))}
             </div>
@@ -194,11 +181,10 @@ const SideNav = ({
   );
 };
 
-export default SideNav;
-
 const MenuItem = ({ item }: { item: SideNavItem }) => {
   const pathname = usePathname();
   const [subMenuOpen, setSubMenuOpen] = useState(false);
+
   const toggleSubMenu = () => {
     setSubMenuOpen(!subMenuOpen);
   };
@@ -222,7 +208,6 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
               {item.icon}
               <span className="text-lg font-medium">{item.title}</span>
             </div>
-
             <div
               className={`transition-transform ${
                 subMenuOpen ? "rotate-180" : ""
@@ -231,7 +216,6 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
               <ChevronDown width="24" height="24" />
             </div>
           </button>
-
           {subMenuOpen && (
             <div className="my-2 ml-4 flex flex-col space-y-4">
               {item.subMenuItems?.map((subItem, idx) => (
@@ -254,13 +238,15 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
         <Link
           href={item.path}
           className={`flex flex-row items-center space-x-4 rounded-lg p-2 ${
-            item.path === pathname ? activeClasses : inactiveClasses
+            item.path === pathname ? "font-semibold text-gray-900" : ""
           }`}
         >
           {item.icon}
-          <span className="text-lg font-medium">{item.title}</span>
+          <span className="text-lg">{item.title}</span>
         </Link>
       )}
     </div>
   );
 };
+
+export default SideNav;

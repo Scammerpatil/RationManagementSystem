@@ -7,7 +7,7 @@ const AddFamilyMembers: React.FC = () => {
       fullName: "",
       gender: "",
       relationship: "",
-      aadharNumber: "", // Added Aadhaar Number field
+      aadharNumber: "",
       aadharFrontCardUrl: "",
       aadharBackCardUrl: "",
     },
@@ -20,7 +20,7 @@ const AddFamilyMembers: React.FC = () => {
         fullName: "",
         gender: "",
         relationship: "",
-        aadharNumber: "", // Added Aadhaar Number field
+        aadharNumber: "",
         aadharFrontCardUrl: "",
         aadharBackCardUrl: "",
       },

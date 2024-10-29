@@ -4,6 +4,7 @@ import Address from "@/models/Address";
 import FairPriceShop from "@/models/FairPriceShop";
 import Stock from "@/models/Stock";
 import { NextRequest, NextResponse } from "next/server";
+import Tehsil from "@/models/Tehsil";
 
 dbConfig();
 
@@ -15,9 +16,18 @@ export async function POST(req: NextRequest) {
 
   // Check if an FPS already exists with the same pincode
   const existingFPS = await FairPriceShop.findOne({ pincode });
-  if (existingFPS) {
+  if (existingFPS.isAdminApproved) {
     return NextResponse.json(
       { message: "FPS already exists with this pincode" },
+      { status: 400 }
+    );
+  }
+
+  const existingTeshsil = await Tehsil.findOne();
+  const talukaExists = existingTeshsil.talukas.includes(taluka);
+  if (!talukaExists) {
+    return NextResponse.json(
+      { message: "Taluka does not exist" },
       { status: 400 }
     );
   }

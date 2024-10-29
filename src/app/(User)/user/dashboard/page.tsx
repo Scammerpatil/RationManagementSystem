@@ -1,85 +1,21 @@
 "use client";
-import { RationCard } from "@/types/RationCard";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import { useUser } from "@/context/UserContext";
 
 const UserDashboard: React.FC = () => {
-  // Dummy data
-  const [rationCard, setRationCard] = useState<RationCard>({
-    address: {
-      district: "",
-      pincode: "",
-      state: "",
-      street: "",
-    },
-    members: [],
-    head: "",
-    rationCardNumber: "",
-    cardType: "Yellow",
-    status: "Active",
-    stock: "",
-  });
-  useEffect(() => {
-    const temp = localStorage.getItem("user")!;
-    const user = JSON.parse(temp);
-    const fetchRationCard = async () => {
-      const response = await axios.post("/api/rationcard/getSingleRationCard", {
-        _id: user.head._id,
-      });
-      setRationCard(response.data.rationCard);
-    };
-    fetchRationCard();
-  }, []);
-  const user = {
-    rationCardNumber: "1234-5678-9101",
-    cardType: "Yellow Card",
-    headOfFamily: "John Doe",
-    income: "₹50,000",
-    casteCategory: "General",
-    address: {
-      street: "123 Main Street",
-      district: "Mumbai",
-      state: "Maharashtra",
-      pincode: "400001",
-    },
-    familyMembers: [
-      { name: "John Doe", role: "Head" },
-      { name: "Jane Doe", role: "Spouse" },
-      { name: "Mark Doe", role: "Son" },
-      { name: "Lucy Doe", role: "Daughter" },
-    ],
-    stockAllocation: {
-      wheat: "10 kg",
-      rice: "5 kg",
-      sugar: "2 kg",
-      oil: "1 L",
-    },
-    recentTransactions: [
-      {
-        date: "10th October 2024",
-        wheat: "5 kg",
-        rice: "2.5 kg",
-        sugar: "1 kg",
-        oil: "0.5 L",
-      },
-    ],
-    notifications: [
-      "New stock allocation available for October.",
-      "Upcoming distribution on 25th October.",
-    ],
-  };
+  const { user, setUser } = useUser();
 
   return (
     <div className="p-10 bg-white rounded-lg">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Ration Card Management Dashboard
       </h1>
+      <p>{}</p>
 
       {/* Ration Card Overview */}
       <div className="p-5 rounded-lg shadow-lg mb-6 ">
         <h2 className="text-xl font-semibold mb-4">Ration Card Overview</h2>
         <p>
-          <strong>Ration Card Number:</strong> {rationCard.rationCardNumber}
+          <strong>Ration Card Number:</strong> {user!.rationCardNumber}
         </p>
         <p>
           <strong>Card Type:</strong> {rationCard.cardType}
@@ -101,7 +37,7 @@ const UserDashboard: React.FC = () => {
       </div>
 
       {/* Family Members */}
-      <div className="p-5 rounded-lg shadow-lg mb-6">
+      {/* <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Family Members</h2>
         <ul className="list-disc ml-5">
           {user.familyMembers.map((member, index) => (
@@ -110,10 +46,10 @@ const UserDashboard: React.FC = () => {
             </li>
           ))}
         </ul>
-      </div>
+      </div> */}
 
       {/* Stock Allocation */}
-      <div className="p-5 rounded-lg shadow-lg mb-6">
+      {/* <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Stock Allocation</h2>
         <ul>
           <li>
@@ -129,10 +65,10 @@ const UserDashboard: React.FC = () => {
             <strong>Oil:</strong> {user.stockAllocation.oil}
           </li>
         </ul>
-      </div>
+      </div> */}
 
       {/* Recent Transactions */}
-      <div className="p-5 rounded-lg shadow-lg mb-6">
+      {/* <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
         {user.recentTransactions.map((transaction, index) => (
           <div key={index} className="mb-3">
@@ -155,17 +91,17 @@ const UserDashboard: React.FC = () => {
             </ul>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Notifications/Updates */}
-      <div className="p-5 rounded-lg shadow-lg mb-6">
+      {/* <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Notifications/Updates</h2>
         <ul className="list-disc ml-5">
           {user.notifications.map((notification, index) => (
             <li key={index}>{notification}</li>
           ))}
         </ul>
-      </div>
+      </div> */}
 
       {/* Actions */}
       <div className="p-5 rounded-lg shadow-lg mb-6">

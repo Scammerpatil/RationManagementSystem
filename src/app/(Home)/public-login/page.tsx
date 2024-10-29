@@ -1,9 +1,18 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, FormEvent, MouseEvent, useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  ChangeEventHandler,
+  FormEvent,
+  InputHTMLAttributes,
+  ReactEventHandler,
+  useEffect,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
 import { EyeOff, Eye } from "lucide-react";
+import { useUser } from "@/context/UserContext";
 
 const PublicLogin = () => {
   const [loginMethod, setLoginMethod] = useState<"aadhaar" | "rationNumber">(
@@ -18,111 +27,77 @@ const PublicLogin = () => {
   const [captcha, setCaptcha] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
   const [disabled, setDisabled] = useState(true);
-  const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState("");
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // New state for password visibility toggle
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // Generate Captcha
+  // Generate random Captcha
   const generateCaptcha = () => {
     const characters =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
-    for (let i = 0; i < 6; i++) {
-      result += characters.charAt(
-        Math.floor(Math.random() * characters.length)
-      );
-    }
-    return result;
+    return Array.from({ length: 6 }, () =>
+      characters.charAt(Math.floor(Math.random() * characters.length))
+    ).join("");
   };
 
-  useEffect(() => {
-    setCaptcha(generateCaptcha());
-  }, []);
+  useEffect(() => setCaptcha(generateCaptcha()), []);
 
   useEffect(() => {
-    if (
-      captcha === captchaInput &&
-      (formData.aadhaar.length === 12 || formData.rationNumber.length === 12)
-    ) {
-      setDisabled(false);
-    } else {
-      setDisabled(true);
-    }
+    setDisabled(
+      !(
+        captcha === captchaInput &&
+        (formData.aadhaar.length === 12 || formData.rationNumber.length === 12)
+      )
+    );
   }, [captcha, captchaInput, formData]);
 
-  // Handle input changes
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  // Handle login method switching
   const handleLoginMethodSwitch = (method: "aadhaar" | "rationNumber") => {
     setLoginMethod(method);
-    setFormData({
-      ...formData,
+    setFormData((prevData) => ({
+      ...prevData,
       [method === "aadhaar" ? "rationNumber" : "aadhaar"]: "",
-    });
+    }));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (captcha !== captchaInput) {
-      toast.error("Invalid Captcha");
-      return;
-    }
-    if (loginMethod === "aadhaar" && formData.aadhaar.length !== 12) {
-      toast.error("Invalid Aadhaar Number");
-      return;
-    }
-    if (loginMethod === "rationNumber" && formData.rationNumber.length !== 12) {
-      toast.error("Invalid Ration Card Number");
-      return;
-    }
+    if (captcha !== captchaInput) return toast.error("Invalid Captcha");
 
-    const otp = axios.post("/api/auth/send-otp-by-aadhar", {
-      aadhaar: formData.aadhaar !== "" ? formData.aadhaar : undefined,
-      rationNumber:
-        formData.rationNumber !== "" ? formData.rationNumber : undefined,
+    const sendOtpRequest = axios.post("/api/auth/send-otp-by-aadhar", {
+      aadhaar: formData.aadhaar || undefined,
+      rationNumber: formData.rationNumber || undefined,
     });
 
-    toast.promise(otp, {
+    toast.promise(sendOtpRequest, {
       loading: "Sending OTP...",
-      success: (data) => {
-        setOtpSent(data.data.token);
+      success: (res) => {
+        setOtpSent(res.data.token);
         (
           document.getElementById("otpContainer") as HTMLDialogElement
-        ).showModal();
+        )?.showModal();
         return "OTP Sent Successfully";
       },
-      error: (error) => {
-        return error.response.data.message;
-      },
+      error: (error) => error.response.data.message,
     });
   };
 
-  const submitForm = () => {
-    const data = {
-      aadhaar: formData.aadhaar,
-      rationNumber: formData.rationNumber,
-      password: formData.password,
-    };
-
-    const response = axios.post("/api/auth/user-login", data);
-    toast.promise(response, {
-      loading: "Logging in...",
-      success: (data) => {
-        const user = data.data.rationCard;
-        localStorage.setItem("user", JSON.stringify(user));
-        router.push("/user/dashboard");
-        return data.data.message;
-      },
-      error: (error) => {
-        return error.response.data.message;
-      },
-    });
+  const submitForm = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await axios.post("/api/auth/user-login", formData);
+      localStorage.setItem("user", JSON.stringify(response.data.rationCard));
+      router.push("/user/dashboard");
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -131,10 +106,11 @@ const PublicLogin = () => {
         <h2 className="text-3xl font-bold mb-8 text-center text-indigo-700">
           Login
         </h2>
+
         <div className="flex justify-center mb-6">
           <button
             onClick={() => handleLoginMethodSwitch("aadhaar")}
-            className={`px-4 py-2 mx-2 rounded-lg font-semibold transition duration-300 ${
+            className={`px-4 py-2 mx-2 rounded-lg font-semibold ${
               loginMethod === "aadhaar"
                 ? "bg-indigo-500 text-white"
                 : "bg-gray-200 text-gray-700"
@@ -144,7 +120,7 @@ const PublicLogin = () => {
           </button>
           <button
             onClick={() => handleLoginMethodSwitch("rationNumber")}
-            className={`px-4 py-2 mx-2 rounded-lg font-semibold transition duration-300 ${
+            className={`px-4 py-2 mx-2 rounded-lg font-semibold ${
               loginMethod === "rationNumber"
                 ? "bg-indigo-500 text-white"
                 : "bg-gray-200 text-gray-700"
@@ -154,146 +130,176 @@ const PublicLogin = () => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           {loginMethod === "aadhaar" && (
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold">
-                Aadhaar Number
-              </label>
-              <input
-                type="text"
-                name="aadhaar"
-                value={formData.aadhaar}
-                maxLength={12}
-                onChange={handleInputChange}
-                className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter your Aadhaar Number"
-                required
-              />
-            </div>
-          )}
-
-          {loginMethod === "rationNumber" && (
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold">
-                Ration Card Number
-              </label>
-              <input
-                type="text"
-                name="rationNumber"
-                value={formData.rationNumber}
-                onChange={handleInputChange}
-                className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter Your Ration Card Number"
-                required
-              />
-            </div>
-          )}
-
-          {/* Password input with toggle */}
-          <div className="mb-4 relative">
-            <label className="block text-gray-700 font-semibold">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className="mt-2 p-3 pr-10 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-                placeholder="Enter Password"
-                required
-              />
-              {/* Eye/EyeOff icon toggle */}
-              <span
-                className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-700"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </span>
-            </div>
-          </div>
-
-          {/* Captcha input */}
-          <div className="mb-4">
-            <label className="block text-gray-700 font-semibold">Captcha</label>
-            <input
-              type="text"
-              name="captchaInput"
-              value={captchaInput}
-              onChange={(e) => setCaptchaInput(e.target.value)}
-              className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
-              placeholder="Enter the Captcha"
-              required
+            <InputField
+              label="Aadhaar Number"
+              name="aadhaar"
+              value={formData.aadhaar}
+              onChange={handleInputChange}
+              maxLength={12}
             />
-            <div className="mt-2 p-2 bg-gray-300 text-black rounded text-center font-bold text-lg">
-              {captcha}
-            </div>
-          </div>
+          )}
+          {loginMethod === "rationNumber" && (
+            <InputField
+              label="Ration Card Number"
+              name="rationNumber"
+              value={formData.rationNumber}
+              onChange={handleInputChange}
+              maxLength={12}
+            />
+          )}
+
+          {/* Password Input with toggle */}
+          <PasswordInput
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            password={formData.password}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+          />
+
+          {/* Captcha Input */}
+          <CaptchaInput
+            captcha={captcha}
+            captchaInput={captchaInput}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setCaptchaInput(e.target.value)
+            }
+          />
 
           <button
             type="submit"
-            className={`w-full bg-indigo-500 text-white py-2 px-4 rounded-lg shadow-lg hover:bg-indigo-600 transition duration-300 mb-2 ${
+            className={`w-full bg-indigo-500 text-white py-2 px-4 rounded-lg shadow-lg hover:bg-indigo-600 transition duration-300 ${
               disabled && "opacity-50 cursor-not-allowed"
             }`}
-            disabled={disabled}
+            disabled={disabled || isSubmitting}
           >
-            Submit
+            {isSubmitting ? "Submitting..." : "Submit"}
           </button>
         </form>
       </div>
 
-      <dialog id="otpContainer" className="modal modal-bottom sm:modal-middle">
-        <div className="modal-box flex flex-col justify-center items-center gap-5">
-          <h1 className="mt-5">Verify Your Email</h1>
-          <label
-            htmlFor="name"
-            className="mb-3 block text-sm text-base-content"
-          >
-            Please Enter the OTP
-          </label>
-          <div className="flex gap-2 mt-5">
-            <input
-              type="text"
-              name="otp"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              placeholder="Enter OTP"
-              className="w-50 rounded-sm border border-stroke bg-base-300 px-6 py-3 text-base-content outline-none transition-all duration-300 focus:border-primary"
-            />
-            <button
-              className="w-50 rounded-sm border border-stroke bg-accent text-accent-content px-6 py-3 outline-none transition-all duration-300 focus:border-primary"
-              onClick={() => {
-                if (otp === otpSent) {
-                  setOtpVerified(true);
-                  toast.success("OTP Verified Successfully");
-                  (
-                    document.getElementById("otpContainer") as HTMLDialogElement
-                  ).close();
-                  submitForm();
-                } else {
-                  toast.error("Invalid OTP");
-                }
-              }}
-            >
-              Verify
-            </button>
-          </div>
-
-          <div className="modal-action">
-            <form method="dialog">
-              <button className="btn btn-outline text-base-content">
-                Close
-              </button>
-            </form>
-          </div>
-        </div>
-      </dialog>
+      {/* OTP Dialog */}
+      <OTPDialog otpSent={otpSent} submitForm={submitForm} />
     </>
   );
 };
 
 export default PublicLogin;
+
+const InputField = ({
+  label,
+  name,
+  value,
+  onChange,
+  maxLength,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+  maxLength: number;
+}) => (
+  <div className="mb-4">
+    <label className="block text-gray-700 font-semibold">{label}</label>
+    <input
+      className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
+      name={name}
+      value={value}
+      onChange={onChange}
+      maxLength={maxLength}
+      placeholder={`Enter ${label}`}
+      required
+    />
+  </div>
+);
+
+const PasswordInput = ({
+  showPassword,
+  setShowPassword,
+  password,
+  onChange,
+}: {
+  showPassword: boolean;
+  password: string;
+  onChange: ChangeEventHandler<HTMLInputElement> | undefined;
+  setShowPassword: ReactEventHandler;
+}) => (
+  <div className="mb-4 relative">
+    <label className="block text-gray-700 font-semibold">Password</label>
+    <div className="relative">
+      <input
+        type={showPassword ? "text" : "password"}
+        value={password}
+        onChange={onChange}
+        className="mt-2 p-3 pr-10 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
+        placeholder="Enter Password"
+        required
+      />
+      <span
+        className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-700"
+        onClick={() => setShowPassword(!showPassword)}
+      >
+        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+      </span>
+    </div>
+  </div>
+);
+
+const CaptchaInput = ({
+  captcha,
+  captchaInput,
+  onChange,
+}: {
+  captcha: string;
+  captchaInput: string;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+}) => (
+  <div className="mb-4">
+    <label className="block text-gray-700 font-semibold">Captcha</label>
+    <input
+      type="text"
+      value={captchaInput}
+      onChange={onChange}
+      className="mt-2 p-3 block w-full border bg-gray-50 text-black border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 transition duration-300"
+      placeholder="Enter the Captcha"
+      required
+    />
+    <div className="mt-2 p-2 bg-gray-300 text-black rounded text-center font-bold text-lg">
+      {captcha}
+    </div>
+  </div>
+);
+
+const OTPDialog = ({
+  otpSent,
+  submitForm,
+}: {
+  otpSent: string;
+  submitForm: () => void;
+}) => (
+  <dialog id="otpContainer" className="modal modal-bottom sm:modal-middle">
+    <div className="modal-box flex flex-col justify-center items-center gap-5">
+      <h1 className="mt-5">Verify Your Email</h1>
+      <label className="mb-3 block text-sm text-base-content">
+        Please Enter the OTP
+      </label>
+      <input
+        type="text"
+        placeholder="Enter OTP"
+        className="w-50 rounded-sm border border-stroke bg-base-300 px-6 py-3 text-base-content outline-none transition-all duration-300 focus:border-primary"
+      />
+      <button
+        onClick={() => submitForm()}
+        className="w-50 rounded-sm border border-stroke bg-accent text-accent-content px-6 py-3 outline-none transition-all duration-300 focus:border-primary"
+      >
+        Verify
+      </button>
+      <form method="dialog">
+        <button className="btn btn-outline text-base-content">Close</button>
+      </form>
+    </div>
+  </dialog>
+);

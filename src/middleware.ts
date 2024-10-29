@@ -46,21 +46,16 @@ export async function middleware(req: NextRequest) {
     "/admin/login",
   ].includes(pathname);
 
-  // Check if a token is present in cookies
   const token = req.cookies.get("token")?.value || "";
   const isLoggedIn = !!token;
 
-  // If user is not logged in and trying to access protected routes, redirect to login
   if (!isLoggedIn && !isPublicPath) {
     console.log("Not logged in, redirecting to public login page");
     return NextResponse.redirect(new URL("/public-login", req.nextUrl.origin));
   }
 
-  // If logged in, verify token
   if (isLoggedIn) {
     const { user } = await verifyToken(token);
-
-    // If token is invalid, redirect to login page
     if (!user) {
       console.log("Token verification failed, redirecting to login");
       return NextResponse.redirect(

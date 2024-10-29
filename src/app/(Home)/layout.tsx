@@ -4,6 +4,7 @@ import "@/app/global.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ToastContainer from "@/components/ToastContainer";
+import { UserProvider } from "@/context/UserContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,10 +21,12 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="light">
       <body className={`${inter.className} bg-white`}>
-        <Header />
-        <ToastContainer />
-        {children}
-        <Footer />
+        <UserProvider>
+          <Header />
+          <ToastContainer />
+          {children}
+          <Footer />
+        </UserProvider>
       </body>
     </html>
   );

@@ -22,7 +22,6 @@ export async function POST(req: NextRequest) {
 
   if (aadhaar) {
     user = await User.findOne({ aadharNumber: aadhaar });
-    console.log(user);
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
