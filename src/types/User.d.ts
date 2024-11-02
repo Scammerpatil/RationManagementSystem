@@ -22,7 +22,8 @@ export type User = {
     | "brother"
     | "sister";
   income: number;
-  aadhaarCardUrl: string;
+  aadhaarFrontCardUrl: string;
+  aadhaarBackCardUrl?: string;
   incomeProofUrl?: string;
   password: string;
   createdAt?: Date;

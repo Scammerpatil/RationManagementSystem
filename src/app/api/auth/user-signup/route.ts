@@ -9,13 +9,14 @@ import Stock from "@/models/Stock";
 import Application from "@/models/Application";
 import rationCardRequest from "@/middlewares/rationCardRequest";
 import mongoose from "mongoose";
+import FairPriceShop from "@/models/FairPriceShop";
 
+// Configure database connection
 dbConfig();
 
+// Main handler function for POST requests to create a user
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
-
-  // Parse form data
   const {
     fullName,
     email,
@@ -40,15 +41,23 @@ export async function POST(req: NextRequest) {
     aadhaarFront,
     aadhaarBack,
     incomeCertificate,
-    familyMembersCount,
   } = parseFormData(formData);
 
-  console.log(fullName);
+  // Validate Fair Price Shop approval status based on user's pincode
+  const fps = await FairPriceShop.findOne({ pincode: pincode });
+  if (!fps || !fps.isAdminApproved) {
+    return NextResponse.json(
+      { message: "Fair Price Shop not found or not approved" },
+      { status: 400 }
+    );
+  }
 
+  // Start a MongoDB session and transaction for safe creation
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
+    // Check if a user with the given Aadhar number or email already exists
     const existingUser = await User.findOne({
       $or: [{ aadharNumber }, { email }],
     }).session(session);
@@ -61,6 +70,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Ensure a password is provided
     if (!password) {
       await session.abortTransaction();
       return NextResponse.json(
@@ -69,9 +79,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Hash the user password
     const hashedPassword = await hashPassword(password as string);
 
-    // Upload documents
+    // Verify that required documents are provided
     if (!aadhaarFront || !aadhaarBack || !incomeCertificate) {
       await session.abortTransaction();
       return NextResponse.json(
@@ -80,6 +91,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Upload document files to Cloudinary
     const uploadedDocs = await uploadDocuments(
       {
         aadhaarFront: aadhaarFront as Blob,
@@ -89,7 +101,7 @@ export async function POST(req: NextRequest) {
       aadharNumber as string
     );
 
-    // Create new user
+    // Create the new user with the uploaded documents and hashed password
     const newUser = await createUser(
       {
         fullName,
@@ -112,12 +124,15 @@ export async function POST(req: NextRequest) {
       session
     );
 
-    if (isHead === "true") {
+    // Create a ration card for the head of the household if applicable
+    if (isHead) {
+      const scheme: "PHH" | "AAY" | "APL" | "BPL" | "AY" =
+        determineScheme(income);
       await createRationCard(
         newUser,
         { street, state, pincode, taluka, district },
         income,
-        familyMembersCount,
+        scheme,
         session
       );
     }
@@ -140,17 +155,16 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Helper Functions
-
+// Parse and validate form data input
 function parseFormData(formData: FormData) {
   return {
     fullName: formData.get("fullName"),
     email: formData.get("email"),
     aadharNumber: formData.get("aadharNumber"),
-    dob: formData.get("dob"),
-    income: parseFloat(formData.get("income") as string),
+    dob: new Date(formData.get("dob") as string),
+    income: validateNumber(formData.get("income"), "income"),
     mobileNumber: formData.get("mobileNumber"),
-    isHead: formData.get("isHead"),
+    isHead: formData.get("isHead") === "true",
     gender: (formData.get("gender") as string).toLowerCase(),
     occupation: formData.get("occupation"),
     caste: formData.get("caste"),
@@ -167,39 +181,56 @@ function parseFormData(formData: FormData) {
     aadhaarFront: formData.get("aadhaarFront"),
     aadhaarBack: formData.get("aadhaarBack"),
     incomeCertificate: formData.get("incomeCertificate"),
-    familyMembersCount:
-      parseInt(formData.get("familyMembersCount") as string, 10) || 1,
   };
 }
 
+// Validate number fields to ensure they are valid numbers
+function validateNumber(
+  value: FormDataEntryValue | null,
+  fieldName: string
+): number {
+  const numberValue = parseFloat(value as string);
+  if (isNaN(numberValue)) {
+    throw new Error(`${fieldName} must be a number.`);
+  }
+  return numberValue;
+}
+
+// Hashes password securely using bcrypt
 async function hashPassword(password: string) {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 }
 
+// Uploads required documents to Cloudinary
 async function uploadDocuments(
   files: { aadhaarFront: Blob; aadhaarBack: Blob; incomeCertificate: Blob },
   aadharNumber: string
 ) {
-  const aadhaarFrontCardUrl = await uploadFile(
-    files.aadhaarFront,
-    aadharNumber,
-    "front"
-  );
-  const aadhaarBackCardUrl = await uploadFile(
-    files.aadhaarBack,
-    aadharNumber,
-    "back"
-  );
-  const incomeProofUrl = await uploadFile(
-    files.incomeCertificate,
-    aadharNumber,
-    "income"
-  );
-
-  return { aadhaarFrontCardUrl, aadhaarBackCardUrl, incomeProofUrl };
+  try {
+    const aadhaarFrontCardUrl = await uploadFile(
+      files.aadhaarFront,
+      aadharNumber,
+      "front"
+    );
+    const aadhaarBackCardUrl = await uploadFile(
+      files.aadhaarBack,
+      aadharNumber,
+      "back"
+    );
+    const incomeProofUrl = await uploadFile(
+      files.incomeCertificate,
+      aadharNumber,
+      "income"
+    );
+    return { aadhaarFrontCardUrl, aadhaarBackCardUrl, incomeProofUrl };
+  } catch (error) {
+    console.error("Document upload failed:", error);
+    throw new Error("Document upload failed");
+  }
 }
 
+// Helper function to upload individual files to Cloudinary
 async function uploadFile(file: Blob, aadharNumber: string, type: string) {
   const fileStream = Buffer.from(await file.arrayBuffer());
   return await useCloudinaryUpload(
@@ -209,7 +240,8 @@ async function uploadFile(file: Blob, aadharNumber: string, type: string) {
   );
 }
 
-async function createUser(userData: any, session: any) {
+// Creates a new user document and saves it in MongoDB
+async function createUser(userData: any, session: mongoose.ClientSession) {
   const newUser = new User({
     ...userData,
     aadhaarFrontCardUrl: userData.uploadedDocs.aadhaarFrontCardUrl.secure_url,
@@ -219,18 +251,30 @@ async function createUser(userData: any, session: any) {
   return await newUser.save({ session });
 }
 
+// Determines the ration card scheme based on income
+function determineScheme(income: number): "PHH" | "AAY" | "APL" | "BPL" | "AY" {
+  if (income <= 15000) return "AAY";
+  if (income > 15000 && income <= 50000) return "BPL";
+  if (income > 50000 && income <= 100000) return "PHH";
+  if (income > 100000 && income <= 200000) return "APL";
+  return "AY";
+}
+
+// Creates a ration card for the user and assigns initial stock based on the scheme
 async function createRationCard(
   user: any,
   addressData: any,
   income: number,
-  familyMembersCount: number,
-  session: any
+  scheme: string,
+  session: mongoose.ClientSession
 ) {
   const address = new Address({ ...addressData });
   const savedAddress = await address.save({ session });
 
   const cardType = determineCardType(income);
-  const initialStock = getInitialStock(cardType, familyMembersCount);
+  const initialStock = getInitialStock(
+    scheme as "AAY" | "BPL" | "PHH" | "APL" | "AY"
+  );
 
   const stock = new Stock({ ...initialStock });
   const savedStock = await stock.save({ session });
@@ -238,6 +282,8 @@ async function createRationCard(
   const newRationCard = new RationCard({
     rationCardNumber: await generateRationCardNumber(),
     cardType,
+    scheme,
+    taluka: addressData.taluka.toLowerCase(),
     status: "Active",
     head: user._id,
     address: savedAddress._id,
@@ -246,26 +292,13 @@ async function createRationCard(
 
   await newRationCard.save({ session });
 
-  const application = new Application({
-    rationCard: newRationCard._id,
-  });
-  await application.save({ session });
-
   if (newRationCard) {
     await rationCardRequest(user.email, await newRationCard.populate("head"));
   }
 }
 
-function determineCardType(income: number): "White" | "Saffron" | "Yellow" {
-  if (income <= 15000) return "Yellow";
-  if (income <= 100000) return "Saffron";
-  return "White";
-}
-
-function getInitialStock(
-  cardType: "White" | "Saffron" | "Yellow",
-  familyMembersCount: number
-) {
+// Generate an initial stock for a given ration card scheme
+function getInitialStock(scheme: "AAY" | "BPL" | "PHH" | "APL" | "AY") {
   const months = [
     "January",
     "February",
@@ -283,60 +316,27 @@ function getInitialStock(
   const currentMonth = months[new Date().getMonth()];
 
   const baseStock = {
-    White: {
-      month: currentMonth,
-      wheat: 5,
-      rice: 5,
-      bajra: 2,
-      sugar: 1,
-      corn: 1,
-      oil: 1,
-    },
-    Saffron: {
-      month: currentMonth,
-      wheat: 3,
-      rice: 3,
-      bajra: 1,
-      sugar: 0.5,
-      corn: 0.5,
-      oil: 0.5,
-    },
-    Yellow: {
-      month: currentMonth,
-      wheat: 2,
-      rice: 2,
-      bajra: 0.5,
-      sugar: 0.25,
-      corn: 0.25,
-      oil: 0.25,
-    },
+    AAY: { wheat: 10, rice: 8, bajra: 3, sugar: 2, corn: 2, oil: 1.5 },
+    BPL: { wheat: 8, rice: 6, bajra: 2, sugar: 1.5, corn: 1.5, oil: 1 },
+    PHH: { wheat: 5, rice: 5, bajra: 2, sugar: 1, corn: 1, oil: 1 },
+    APL: { wheat: 3, rice: 3, bajra: 1, sugar: 0.5, corn: 0.5, oil: 0.5 },
+    AY: { wheat: 1, rice: 1, bajra: 0.5, sugar: 0.25, corn: 0.25, oil: 0.25 },
   };
 
-  const stock = baseStock[cardType];
-  (Object.keys(stock) as (keyof typeof stock)[]).forEach((key) => {
-    if (key !== "month") {
-      stock[key] *= familyMembersCount;
-    }
-  });
+  const stock = { month: currentMonth, ...baseStock[scheme] };
 
   return stock;
 }
 
-const generateRationCardNumber = async () => {
-  const regionCode = "MH";
-  const currentYear = new Date().getFullYear().toString();
-  const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, "0");
+// Helper to determine card type based on income
+function determineCardType(income: number): "Yellow" | "Saffron" | "White" {
+  if (income <= 15000) return "Yellow";
+  if (income > 15000 && income <= 100000) return "Saffron";
+  return "White";
+}
 
-  const lastCard = await RationCard.findOne({
-    rationCardNumber: { $regex: `^${regionCode}${currentYear}` },
-  }).sort({ rationCardNumber: -1 });
-
-  let newNumber = "0001";
-
-  if (lastCard) {
-    const lastNumber = parseInt(lastCard.rationCardNumber.slice(-4));
-    newNumber = (lastNumber + 1).toString().padStart(4, "0");
-  }
-
-  return `${regionCode}${currentYear}${currentMonth}${newNumber}`;
-};
+// Generate a unique ration card number (placeholder implementation)
+async function generateRationCardNumber() {
+  // Generate a random 12-digit number for the ration card (for simplicity)
+  return Math.floor(100000000000 + Math.random() * 900000000000).toString();
+}

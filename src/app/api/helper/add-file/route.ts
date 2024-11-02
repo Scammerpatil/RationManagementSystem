@@ -7,7 +7,6 @@ export async function POST(req: NextRequest) {
   const type = formData.get("type");
   const aadharNumber = formData.get("aadharNumber");
   var fileName = `${aadharNumber}_${type}`.replace(/\s/g, "_");
-  console.log(fileName);
   const fileStream = Buffer.from(await (file as File)!.arrayBuffer());
   try {
     const data = await useCloudinaryUpload(fileStream, "aadhaars", fileName);

@@ -1,6 +1,8 @@
+import { updateFPSStock } from "@/helper/fpsHelpers";
 import approvalEmail from "@/middlewares/approvalEmail";
 import dbConfig from "@/middlewares/db.config";
 import Address from "@/models/Address";
+import FairPriceShop from "@/models/FairPriceShop";
 import RationCard from "@/models/RationCard";
 import Stock from "@/models/Stock";
 import Transaction from "@/models/Transaction";
@@ -10,38 +12,75 @@ import { NextRequest, NextResponse } from "next/server";
 dbConfig();
 
 export async function PUT(req: NextRequest) {
+  Stock;
+  User;
+  Address;
   const { rationCardId, status } = await req.json();
-  const accpetedStatus = status === "Approved";
+  const acceptedStatus = status === "Approved";
+
   try {
-    if (!accpetedStatus) {
-      User;
-      const rationCard = await RationCard.findByIdAndDelete(rationCardId)
-        .populate("head")
-        .populate("address")
-        .populate("stock")
-        .populate("transaction");
-      const user = await User.findByIdAndDelete(rationCard.head._id);
-      const address = await Address.findByIdAndDelete(rationCard.address._id);
-      const stock = await Stock.findByIdAndDelete(rationCard.stock._id);
-      const transaction = await Transaction.findByIdAndDelete(
-        rationCard.transaction._id
+    const rationCard = await RationCard.findById(rationCardId)
+      .populate("head")
+      .populate("address");
+    if (!rationCard) {
+      return NextResponse.json(
+        { message: "Ration Card not found" },
+        { status: 404 }
       );
-      if (rationCard) {
-        return NextResponse.json(rationCard);
-      }
     }
-    const rationCard = await RationCard.findByIdAndUpdate(
-      rationCardId,
-      { isAdminApproved: accpetedStatus },
-      { new: true }
-    ).populate("head");
-    await rationCard.save();
-    await approvalEmail(rationCard.head.email, rationCard);
-    if (rationCard) {
-      return NextResponse.json(rationCard);
+
+    if (rationCard.status === "Cancelled") {
+      return NextResponse.json(
+        { message: "Ration Card is cancelled" },
+        { status: 400 }
+      );
+    }
+
+    if (rationCard.isAdminApproved) {
+      return NextResponse.json(
+        { message: "Ration Card is already approved" },
+        { status: 400 }
+      );
+    }
+
+    if (acceptedStatus) {
+      rationCard.isAdminApproved = true;
+
+      const fps = await FairPriceShop.findOne({
+        pincode: rationCard.address.pincode,
+      });
+      if (!fps) {
+        return NextResponse.json(
+          { message: "Fair Price Shop not found" },
+          { status: 404 }
+        );
+      }
+
+      // Add ration card to FPS and update stock
+      fps.rationUnder.push(rationCard._id);
+
+      await fps.save();
+      await updateFPSStock(fps._id);
+      await approvalEmail(rationCard.head.email, rationCard);
+      await rationCard.save();
+      return NextResponse.json(
+        { message: "Ration Card Approved" },
+        { status: 200 }
+      );
+    } else {
+      // Reject Ration Card
+      rationCard.status = "Rejected";
+      await rationCard.save();
+      return NextResponse.json(
+        { message: "Ration Card Rejected" },
+        { status: 200 }
+      );
     }
   } catch (error) {
-    console.log(error);
-    return NextResponse.error();
+    console.error("Error processing Ration Card approval:", error);
+    return NextResponse.json(
+      { message: "An internal server error occurred" },
+      { status: 500 }
+    );
   }
 }

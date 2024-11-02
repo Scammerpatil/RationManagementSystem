@@ -16,7 +16,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No token found" });
   }
   try {
-    var user = jwt.verify(token, process.env.JWT_SECRET!);
+    var user = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload & {
+      rationCardId: string;
+    };
     const rationCard = await RationCard.findOne({
       _id: user.rationCardId,
     }).populate("address stock fpsId head");

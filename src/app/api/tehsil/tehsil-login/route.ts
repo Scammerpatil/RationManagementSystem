@@ -9,7 +9,6 @@ dbConfig();
 
 export async function POST(req: NextRequest) {
   const { tehsilUserId, password } = await req.json();
-  console.log(tehsilUserId, password);
   Address;
 
   if (!tehsilUserId || !password) {
@@ -66,6 +65,6 @@ export async function POST(req: NextRequest) {
 const setTokenCookie = (response: NextResponse, token: string) => {
   response.cookies.set("token", token, {
     httpOnly: true,
-    maxAge: 60 * 60 * 24, // 1 day
+    maxAge: 60 * 60 * 24,
   });
 };

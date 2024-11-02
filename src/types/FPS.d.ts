@@ -1,6 +1,7 @@
 import { ObjectId } from "mongoose";
 
 export interface FairPriceShop {
+  _id: ObjectId;
   fpsUserId: string;
   fullName: string;
   mobileNumber: string;

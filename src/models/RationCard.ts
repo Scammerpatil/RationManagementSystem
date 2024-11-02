@@ -33,6 +33,15 @@ const RationCardSchema = new Schema({
     ref: "Address",
     required: true,
   },
+  taluka: {
+    type: String,
+    required: true,
+  },
+  scheme: {
+    type: String,
+    required: true,
+    enum: ["PHH", "AAY", "APL", "BPL", "AY"],
+  },
   fpsId: {
     type: Schema.Types.ObjectId,
     ref: "FairPriceShop",

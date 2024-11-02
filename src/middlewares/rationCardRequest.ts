@@ -25,7 +25,7 @@ export default async function rationCardRequest(
     html: ejs.render(template, {
       userName: rationCard.head?.fullName,
       rationCardType: rationCard.cardType,
-      applicationNumber: rationCard.rationNumber,
+      applicationNumber: rationCard.rationCardNumber,
     }),
   };
   try {

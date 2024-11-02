@@ -93,7 +93,9 @@ const FairPriceShopForm = () => {
         router.push("/fps-login");
         return "Fair Price Shop registered successfully.";
       },
-      error: "Error registering Fair Price Shop.",
+      error: (e) => {
+        return "Error registering Fair Price Shop.";
+      },
     });
   };
 

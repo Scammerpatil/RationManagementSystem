@@ -10,22 +10,23 @@ dbConfig();
 
 export async function POST(req: NextRequest) {
   const fpsData = await req.json();
-  const { fpsUserId, fullName, mobileNumber, email, role, address, password } =
-    fpsData;
+  const { fullName, mobileNumber, email, address, password } = fpsData;
   const { street, taluka, district, state, pincode } = address;
 
   // Check if an FPS already exists with the same pincode
   const existingFPS = await FairPriceShop.findOne({ pincode });
-  if (existingFPS.isAdminApproved) {
+  if (existingFPS && existingFPS.isAdminApproved) {
     return NextResponse.json(
       { message: "FPS already exists with this pincode" },
       { status: 400 }
     );
   }
 
-  const existingTeshsil = await Tehsil.findOne();
-  const talukaExists = existingTeshsil.talukas.includes(taluka);
-  if (!talukaExists) {
+  const existingTeshsil = await Tehsil.findOne({
+    taluka: taluka.toLowerCase(),
+  });
+  console.log("Existing Taluka:", existingTeshsil);
+  if (!existingTeshsil) {
     return NextResponse.json(
       { message: "Taluka does not exist" },
       { status: 400 }
@@ -68,22 +69,22 @@ export async function POST(req: NextRequest) {
       fullName,
       mobileNumber,
       email,
-      role,
       pincode,
       password: hashedPassword,
       address: savedAddress._id,
       stock: savedStock._id,
       remainingStock: savedRemainingStock._id,
+      isAdminApproved: false,
     });
     await newFps.save();
 
     return NextResponse.json({
       message: "FPS Registered Successfully",
-      fpsId: fpsUserId,
+      fpsId: fpsShopNumber,
     });
   } catch (error: any) {
     console.error("Error registering FPS:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error }, { status: 500 });
   }
 }
 
@@ -91,10 +92,6 @@ const generateFPSShopNumber = async (taluka: String) => {
   const regionCode = "FPS";
 
   const talukaCode = taluka.substring(0, 2).toUpperCase();
-
-  const currentYear = new Date().getFullYear().toString();
-
-  const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, "0");
 
   const lastShop = await FairPriceShop.findOne({
     fpsUserId: { $regex: `^${regionCode}-${talukaCode}-` },

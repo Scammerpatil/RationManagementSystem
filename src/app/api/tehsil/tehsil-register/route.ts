@@ -10,7 +10,6 @@ dbConfig();
 export async function POST(req: NextRequest) {
   const { tehsilUserId, password, address } = await req.json();
   const { street, taluka, district, state, pincode } = address;
-  console.log("Address Pincode:", pincode);
 
   const newAddress = new Address({
     street,
@@ -43,7 +42,9 @@ export async function POST(req: NextRequest) {
 
   try {
     // Check if the Tehsil User ID already exists
-    const existingTehsil = await Tehsil.findOne({ tehsilUserId });
+    var existingTehsil = await Tehsil.findOne({
+      taluka: taluka.toLowerCase(),
+    });
     if (existingTehsil) {
       return NextResponse.json(
         { message: "Tehsil User ID already exists." },
@@ -59,6 +60,7 @@ export async function POST(req: NextRequest) {
       tehsilUserId,
       password: hashedPassword,
       address: savedAddress._id,
+      taluka: savedAddress.taluka.toLowerCase(),
       fpsShopUnder: [],
       officers: [],
       pincode: savedAddress.pincode,

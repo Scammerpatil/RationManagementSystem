@@ -1,12 +1,15 @@
 "use client";
 import RationCardDetails from "@/components/RationCardDetails";
+import FPSTableSkeleton from "@/components/TableSkeleton";
 import { useUser } from "@/context/UserContext";
 import { RationCard } from "@/types/RationCard";
 import { Tehsil } from "@/types/Tehsil";
 import axios from "axios";
 import { Eye } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import ApprovedRationCard from "./ApprovedRationCard";
+import PendingRationCard from "./PendingRationCard";
 
 const ApproveRationCardPage = () => {
   const [rationCardList, setRationCardList] = useState<RationCard[]>([]);
@@ -43,11 +46,6 @@ const ApproveRationCardPage = () => {
           return e.response.data.message;
         },
       });
-      setRationCardList((prevList) =>
-        prevList.map((card) =>
-          card._id === rationCardId ? { ...card, status } : card
-        )
-      );
     } catch (error) {
       console.error("Failed to update ration card status", error);
     }
@@ -56,7 +54,7 @@ const ApproveRationCardPage = () => {
   // Filter ration cards based on the selected filter state
   const filteredRationCardList = rationCardList.filter((card) => {
     if (filter === "Pending") {
-      return !card.isAdminApproved && card.status !== "Rejected";
+      return !card.isAdminApproved && card.status !== "Cancelled";
     } else if (filter === "Approved") {
       return card.isAdminApproved;
     }
@@ -65,110 +63,41 @@ const ApproveRationCardPage = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-semibold mb-4">Approve Ration Cards</h1>
-
-      {/* Filter buttons */}
-      <div className="flex space-x-4 mb-4">
-        <button
-          className={`px-4 py-2 rounded-md ${
-            filter === "Pending" ? "bg-orange-600 text-white" : "bg-gray-200"
-          }`}
-          onClick={() => setFilter("Pending")}
+      <div
+        role="tablist"
+        className="tabs tabs-lifted bg-base-300 p-10 border-r-4 overflow-x-scroll"
+      >
+        <input
+          type="radio"
+          name="my_tabs_2"
+          role="tab"
+          className="tab text-xl"
+          aria-label="Approved"
+          defaultChecked
+        />
+        <div
+          role="tabpanel"
+          className="tab-content bg-base-100 border-base-300 rounded-box p-6"
         >
-          Show Pending
-        </button>
-        <button
-          className={`px-4 py-2 rounded-md ${
-            filter === "Approved" ? "bg-green-500 text-white" : "bg-gray-200"
-          }`}
-          onClick={() => setFilter("Approved")}
-        >
-          Show Approved
-        </button>
-      </div>
-
-      {filteredRationCardList.length === 0 ? (
-        <p className="text-gray-600">
-          No {filter.toLowerCase()} ration cards available.
-        </p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr>
-                <th className="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Ration Card Number
-                </th>
-                <th className="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Card Type
-                </th>
-                <th className="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Head of Family
-                </th>
-                {/* <th className="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Status
-                </th> */}
-                <th className="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Action
-                </th>
-                <th className="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  View
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRationCardList.map((card) => (
-                <tr key={card.rationCardNumber}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {card.rationCardNumber}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {card.cardType}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {card.head?.fullName || "N/A"}
-                  </td>
-                  {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {card.status}
-                  </td> */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {!card.isAdminApproved && card.status !== "Rejected" ? (
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleApproval(card._id, "Approved")}
-                          className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleApproval(card._id, "Rejected")}
-                          className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <span>{card.status}</span>
-                    )}
-                  </td>
-                  <td className="flex items-center justify-center h-20">
-                    <button
-                      onClick={() => {
-                        setRationCard(card);
-                        document
-                          .getElementById("rationCardDetails")
-                          .showModal();
-                      }}
-                    >
-                      <Eye />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Suspense fallback={<FPSTableSkeleton />}>
+            <ApprovedRationCard />
+          </Suspense>
         </div>
-      )}
-      {rationCard && <RationCardDetails rationCard={rationCard} />}
+
+        <input
+          type="radio"
+          name="my_tabs_2"
+          role="tab"
+          className="tab text-xl p-2"
+          aria-label="Pending"
+        />
+        <div
+          role="tabpanel"
+          className="tab-content bg-base-100 border-base-300 rounded-box p-6"
+        >
+          <PendingRationCard />
+        </div>
+      </div>
     </div>
   );
 };

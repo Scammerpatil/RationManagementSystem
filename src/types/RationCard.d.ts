@@ -6,6 +6,7 @@ import { Stock } from "./Stock";
 import { Transaction } from "./Transaction";
 
 export interface RationCard {
+  _id: string;
   rationCardNumber: string;
   cardType: "White" | "Saffron" | "Yellow";
   status: "Active" | "Suspended" | "Cancelled" | "Pending";

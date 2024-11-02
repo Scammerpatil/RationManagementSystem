@@ -8,16 +8,12 @@ dbConfig();
 
 export async function POST(req: NextRequest) {
   const { taluka } = await req.json();
-  console.log(taluka);
+  const lowerCaseTaluka = taluka.toLowerCase();
   User;
   try {
-    const temp = await RationCard.find().populate("address").populate("head");
-    var rationCards = [];
-    for (let i = 0; i < temp.length; i++) {
-      if (temp[i].address.taluka === taluka) {
-        rationCards.push(temp[i]);
-      }
-    }
+    const rationCards = await RationCard.find({ taluka: lowerCaseTaluka })
+      .populate("address")
+      .populate("head");
     if (rationCards) {
       return NextResponse.json(rationCards);
     } else {

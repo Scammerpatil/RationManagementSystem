@@ -1,21 +1,7 @@
+import { FairPriceShop } from "@/types/FPS";
 import React from "react";
 
-interface FPSDetailsProps {
-  fps: {
-    fpsUserId: string;
-    fullName: string;
-    address: {
-      street: string;
-      taluka: string;
-      district: string;
-      pincode: Number;
-    };
-    mobileNumber: string;
-    isAdminApproved: boolean;
-  };
-}
-
-const FPSDetails: React.FC<FPSDetailsProps> = ({ fps }) => {
+const FPSDetails = ({ fps }: { fps: FairPriceShop }) => {
   return (
     <dialog id="fpsDetails" className="modal modal-bottom sm:modal-middle">
       <div className="modal-box">
@@ -34,12 +20,18 @@ const FPSDetails: React.FC<FPSDetailsProps> = ({ fps }) => {
             <span>{fps.address.taluka}</span>
           </div>
           <div>
+            <span className="font-bold">Pincode:</span>{" "}
+            <span>{fps.pincode}</span>
+          </div>
+          <div>
             <span className="font-bold">Contact Number:</span>{" "}
             <span>{fps.mobileNumber}</span>
           </div>
           <div>
             <span className="font-bold">Status:</span>{" "}
-            <span className="text-yellow-500">{fps.isAdminApproved}</span>
+            <span className="text-yellow-500">
+              {fps.isAdminApproved ? "Approved" : "Pending"}
+            </span>
           </div>
         </div>
         <div className="modal-action">

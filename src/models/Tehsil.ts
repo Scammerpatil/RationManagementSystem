@@ -20,6 +20,10 @@ const TehsilSchema = new Schema(
       unique: true,
       match: /^[1-9][0-9]{5}$/,
     },
+    taluka: {
+      type: String,
+      required: true,
+    },
     password: {
       type: String,
       required: true,

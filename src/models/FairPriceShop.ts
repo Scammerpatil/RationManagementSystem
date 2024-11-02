@@ -38,11 +38,13 @@ const FairPriceShopSchema = new Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "RationCard",
+        unique: true,
       },
     ],
     stock: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Stock",
+      required: true,
     },
     remainingStock: {
       type: mongoose.Schema.Types.ObjectId,

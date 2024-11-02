@@ -1,23 +1,36 @@
+import { updateFPSStock } from "@/helper/fpsHelpers";
+import { updateTehsilStock } from "@/helper/tehsilStockHelper";
 import dbConfig from "@/middlewares/db.config";
+import Address from "@/models/Address";
 import FairPriceShop from "@/models/FairPriceShop";
 import RationCard from "@/models/RationCard";
 import Stock from "@/models/Stock";
+import Tehsil from "@/models/Tehsil";
 import User from "@/models/User";
 import type { RationCard as RationCardType } from "@/types/RationCard";
+import type { Stock as StockType } from "@/types/Stock";
+import { ObjectId } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 dbConfig();
 
 export async function POST(req: NextRequest) {
+  Address;
   const { user, members } = await req.json();
+  const id = await Tehsil.findOne({ taluka: user.taluka });
   const rationCard = await RationCard.findOne({
     rationCardNumber: user.rationCardNumber,
+  }).populate("address");
+
+  const fps = await FairPriceShop.findOne({
+    pincode: rationCard.address.pincode,
   });
 
   if (!rationCard) {
     return NextResponse.json("Ration card not found", { status: 404 });
   }
 
+  // Add each new member
   for (const member of members) {
     const {
       fullName,
@@ -48,88 +61,49 @@ export async function POST(req: NextRequest) {
     rationCard.members.push(newMember);
   }
 
-  const stock = await getInitialStock(
-    rationCard,
-    rationCard.members.length + 1
-  );
-  if (stock) {
-    rationCard.stock = stock;
-  }
-
+  // Only update stock for the new members
+  const stockID = rationCard.stock._id;
+  await updateStock({
+    stockID,
+    schemeType: rationCard.scheme,
+    totalMembersCount: rationCard.members.length,
+  });
+  await updateFPSStock(fps._id);
+  await updateTehsilStock(id._id);
   await rationCard.save();
-  await updateFPSStock(
-    rationCard,
-    rationCard.members.length + 1,
-    user.rationCardType
-  );
 
   return NextResponse.json("Members added successfully");
 }
 
-const getInitialStock = async (
-  rationCard: RationCardType,
-  familyMembersCount: number
-) => {
-  const allocatedStock = await Stock.findOne({
-    rationCardNumber: rationCard.rationCardNumber,
-  });
-  if (!allocatedStock) return null;
+const updateStock = async ({
+  stockID,
+  schemeType,
+  totalMembersCount,
+}: {
+  stockID: ObjectId;
+  schemeType: "AAY" | "BPL" | "PHH" | "APL" | "AY";
+  totalMembersCount: number;
+}) => {
+  const stock = await Stock.findById(stockID);
+  if (!stock) {
+    console.error("Stock not found");
+    return;
+  }
 
-  allocatedStock.wheat *= familyMembersCount;
-  allocatedStock.rice *= familyMembersCount;
-  allocatedStock.bajra *= familyMembersCount;
-  allocatedStock.sugar *= familyMembersCount;
-  allocatedStock.corn *= familyMembersCount;
-  allocatedStock.oil *= familyMembersCount;
-
-  allocatedStock.month = new Date().getMonth();
-  await allocatedStock.save();
-
-  return allocatedStock;
-};
-
-const updateFPSStock = async (
-  rationCard: RationCardType,
-  totalMember: number,
-  rationCardType: "White" | "Saffron" | "Yellow"
-) => {
-  const fps = await FairPriceShop.findById(rationCard.fpsId);
-  if (!fps) return;
-
-  const fpsStock = await Stock.findById(fps.stock);
-  if (!fpsStock) return;
-
+  // Base stock allocations based on scheme type
   const baseStock = {
-    White: {
-      wheat: 5,
-      rice: 5,
-      bajra: 2,
-      sugar: 1,
-      corn: 1,
-      oil: 1,
-    },
-    Saffron: {
-      wheat: 10,
-      rice: 10,
-      bajra: 4,
-      sugar: 2,
-      corn: 2,
-      oil: 2,
-    },
-    Yellow: {
-      wheat: 15,
-      rice: 15,
-      bajra: 6,
-      sugar: 3,
-      corn: 3,
-      oil: 3,
-    },
+    AAY: { wheat: 10, rice: 8, bajra: 3, sugar: 2, corn: 2, oil: 1.5 },
+    BPL: { wheat: 8, rice: 6, bajra: 2, sugar: 1.5, corn: 1.5, oil: 1 },
+    PHH: { wheat: 5, rice: 5, bajra: 2, sugar: 1, corn: 1, oil: 1 },
+    APL: { wheat: 3, rice: 3, bajra: 1, sugar: 0.5, corn: 0.5, oil: 0.5 },
+    AY: { wheat: 1, rice: 1, bajra: 0.5, sugar: 0.25, corn: 0.25, oil: 0.25 },
   };
 
-  const stock = baseStock[rationCardType];
-  (Object.keys(stock) as (keyof typeof stock)[]).forEach((key) => {
-    fpsStock[key] += stock[key] * totalMember;
+  const schemeStock = baseStock[schemeType];
+
+  Object.keys(schemeStock).forEach((item) => {
+    stock[item] = schemeStock[item] * (totalMembersCount + 1);
   });
 
-  await fpsStock.save();
+  await stock.save();
 };

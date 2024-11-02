@@ -5,6 +5,9 @@ import { Transaction } from "./Transaction";
 import { Stock } from "./Stock";
 
 export interface Tehsil {
+  _id: ObjectId;
+  taluka: string;
+  pincode: string;
   tehsilUserId: string;
   address: Address;
   pincode: string;

@@ -3,7 +3,6 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "@/app/assets/logo.png";
-import Link from "next/link";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useUser } from "@/context/UserContext";
@@ -12,6 +11,7 @@ import { FairPriceShop } from "@/types/FPS";
 
 const Header = () => {
   const { user } = useUser();
+  console.log(user);
   const router = useRouter();
   const handleLogout = async () => {
     try {
@@ -73,7 +73,9 @@ const Header = () => {
                 {/* User Name */}
                 <div className="flex items-center justify-center">
                   <span className="text-lg font-semibold text-gray-900">
-                    {user && (user.head?.fullName || user.ownerName)}
+                    {user &&
+                      ((user as RationCard).head?.fullName ||
+                        (user as FairPriceShop).fullName)}
                   </span>
                 </div>
 
@@ -112,10 +114,15 @@ const Header = () => {
 
 const NotApproved = () => {
   const router = useRouter();
-  const user = useUser();
+  const { user } = useUser();
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    const response = axios.get("/api/auth/logout");
+    toast.promise(response, {
+      loading: "Logging Out....",
+      success: "Logged Out Successfully",
+      error: "Something went wrong...",
+    });
     router.push("/");
   };
 
