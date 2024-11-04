@@ -6,7 +6,6 @@ import User from "@/models/User";
 import Address from "@/models/Address";
 import RationCard from "@/models/RationCard";
 import Stock from "@/models/Stock";
-import Application from "@/models/Application";
 import rationCardRequest from "@/middlewares/rationCardRequest";
 import mongoose from "mongoose";
 import FairPriceShop from "@/models/FairPriceShop";
@@ -299,22 +298,6 @@ async function createRationCard(
 
 // Generate an initial stock for a given ration card scheme
 function getInitialStock(scheme: "AAY" | "BPL" | "PHH" | "APL" | "AY") {
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const currentMonth = months[new Date().getMonth()];
-
   const baseStock = {
     AAY: { wheat: 10, rice: 8, bajra: 3, sugar: 2, corn: 2, oil: 1.5 },
     BPL: { wheat: 8, rice: 6, bajra: 2, sugar: 1.5, corn: 1.5, oil: 1 },
@@ -323,7 +306,7 @@ function getInitialStock(scheme: "AAY" | "BPL" | "PHH" | "APL" | "AY") {
     AY: { wheat: 1, rice: 1, bajra: 0.5, sugar: 0.25, corn: 0.25, oil: 0.25 },
   };
 
-  const stock = { month: currentMonth, ...baseStock[scheme] };
+  const stock = { ...baseStock[scheme] };
 
   return stock;
 }
@@ -336,7 +319,18 @@ function determineCardType(income: number): "Yellow" | "Saffron" | "White" {
 }
 
 // Generate a unique ration card number (placeholder implementation)
-async function generateRationCardNumber() {
-  // Generate a random 12-digit number for the ration card (for simplicity)
-  return Math.floor(100000000000 + Math.random() * 900000000000).toString();
-}
+const generateRationCardNumber = async () => {
+  const regionCode = "MH";
+  const currentYear = new Date().getFullYear().toString();
+  const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, "0");
+  const lastCard = await RationCard.findOne({
+    rationCardNumber: { $regex: `^${regionCode}${currentYear}` },
+  }).sort({ rationCardNumber: -1 });
+  let newNumber = "0001";
+  if (lastCard) {
+    console.log(lastCard.rationCardNumber);
+    const lastNumber = parseInt(lastCard.rationCardNumber.slice(-4));
+    newNumber = (lastNumber + 1).toString().padStart(4, "0");
+  }
+  return `${regionCode}${currentYear}${currentMonth}${newNumber}`;
+};

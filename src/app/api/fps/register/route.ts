@@ -48,7 +48,6 @@ export async function POST(req: NextRequest) {
 
     // Initialize stock with default values
     const initialStock = {
-      month: "January",
       wheat: 0,
       rice: 0,
       bajra: 0,

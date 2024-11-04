@@ -50,6 +50,33 @@ const FairPriceShopSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Stock",
     },
+    previousStock: [
+      {
+        month: {
+          type: String,
+          required: true,
+        },
+        year: {
+          type: Number,
+          required: true,
+        },
+        stockReceived: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          ref: "Stock",
+        },
+        stockDistributed: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          ref: "Stock",
+        },
+        remainingStock: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Stock",
+          required: true,
+        },
+      },
+    ],
     transactions: [
       {
         type: mongoose.Schema.Types.ObjectId,

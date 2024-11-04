@@ -9,7 +9,7 @@ const TransactionSchema = new Schema({
   senderType: {
     type: String,
     required: true,
-    enum: ["Tehsil", "FairPriceShop", "User"],
+    enum: ["Tehsil", "FairPriceShop"],
   },
   receiverId: {
     type: mongoose.Schema.Types.ObjectId,

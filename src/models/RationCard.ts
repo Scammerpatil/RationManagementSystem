@@ -51,6 +51,21 @@ const RationCardSchema = new Schema({
     ref: "Stock",
     required: true,
   },
+  monthlyStockRecords: [
+    {
+      month: String,
+      year: Number,
+      stockReceived: {
+        type: Schema.Types.ObjectId,
+        ref: "Stock",
+      },
+      stockUtilized: {
+        type: Schema.Types.ObjectId,
+        ref: "Stock",
+      },
+    },
+  ],
+
   transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Transaction" }],
   isAdminApproved: {
     type: Boolean,

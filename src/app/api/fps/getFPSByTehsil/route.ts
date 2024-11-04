@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
     var fpsList = [];
     for (let i = 0; i < temp.length; i++) {
-      if (temp[i].address.taluka === taluka) {
+      if (temp[i].address.taluka.toLowerCase() === taluka.toLowerCase()) {
         fpsList.push(temp[i]);
       }
     }

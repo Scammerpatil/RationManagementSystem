@@ -1,20 +1,13 @@
 import { updateFPSStock } from "@/helper/fpsHelpers";
 import approvalEmail from "@/middlewares/approvalEmail";
 import dbConfig from "@/middlewares/db.config";
-import Address from "@/models/Address";
 import FairPriceShop from "@/models/FairPriceShop";
 import RationCard from "@/models/RationCard";
-import Stock from "@/models/Stock";
-import Transaction from "@/models/Transaction";
-import User from "@/models/User";
 import { NextRequest, NextResponse } from "next/server";
 
 dbConfig();
 
 export async function PUT(req: NextRequest) {
-  Stock;
-  User;
-  Address;
   const { rationCardId, status } = await req.json();
   const acceptedStatus = status === "Approved";
 

@@ -1,21 +1,17 @@
 import { updateFPSStock } from "@/helper/fpsHelpers";
 import { updateTehsilStock } from "@/helper/tehsilStockHelper";
 import dbConfig from "@/middlewares/db.config";
-import Address from "@/models/Address";
 import FairPriceShop from "@/models/FairPriceShop";
 import RationCard from "@/models/RationCard";
 import Stock from "@/models/Stock";
 import Tehsil from "@/models/Tehsil";
 import User from "@/models/User";
-import type { RationCard as RationCardType } from "@/types/RationCard";
-import type { Stock as StockType } from "@/types/Stock";
 import { ObjectId } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 dbConfig();
 
 export async function POST(req: NextRequest) {
-  Address;
   const { user, members } = await req.json();
   const id = await Tehsil.findOne({ taluka: user.taluka });
   const rationCard = await RationCard.findOne({

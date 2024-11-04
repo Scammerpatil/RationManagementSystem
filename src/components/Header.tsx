@@ -5,7 +5,7 @@ import Link from "next/link";
 function Header() {
   return (
     <header className="relative flex justify-between items-center p-4 bg-blue-500 text-white shadow-md">
-      <div className="flex items-center">
+      <a className="flex items-center cursor-pointer" href="/">
         <Image
           src={logo}
           height={100}
@@ -19,7 +19,7 @@ function Header() {
             Food, Civil Supplies & Consumer Protection Department
           </p>
         </div>
-      </div>
+      </a>
       <div
         className="dropdown dropdown-hover dropdown-left"
         data-theme="cupcake"

@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import Tehsil from "@/models/Tehsil";
 import dbConfig from "@/middlewares/db.config";
-import Address from "@/models/Address";
 import FairPriceShop from "@/models/FairPriceShop";
-import Stock from "@/models/Stock";
-import Transaction from "@/models/Transaction";
 
 dbConfig();
 
 export async function GET(req: NextRequest) {
-  Address;
-  FairPriceShop;
-  Transaction;
-  Stock;
   const token = req.cookies.get("token")?.value;
   if (!token) {
     return NextResponse.json({ error: "No token found" }, { status: 401 });
@@ -28,15 +20,15 @@ export async function GET(req: NextRequest) {
 
   try {
     const data = jwt.verify(token, process.env.JWT_SECRET);
-    const tehsil = await Tehsil.findOne({
-      tehsilUserId: data.tehsilId as string,
-    }).populate("address fpsShopUnder transactions stock");
+    const fps = await FairPriceShop.findOne({
+      fpsUserId: data.fpsId as string,
+    }).populate("address rationUnder transactions stock remainingStock");
 
-    if (!tehsil) {
-      return NextResponse.json({ error: "Tehsil not found" }, { status: 404 });
+    if (!fps) {
+      return NextResponse.json({ error: "FPS not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ tehsil });
+    return NextResponse.json({ fps });
   } catch (err: any) {
     console.log(err);
     const errorMessage =

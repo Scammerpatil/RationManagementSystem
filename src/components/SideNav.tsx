@@ -3,14 +3,13 @@ import { SideNavItem } from "@/types/types";
 import { AlignJustify, ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useUser } from "@/context/UserContext";
-import { FairPriceShop } from "@/types/FPS";
-import { Tehsil } from "@/types/Tehsil";
-import { RationCard } from "@/types/RationCard";
 import { User } from "@/types/User";
+import SideNavSkeleton from "./PageSkeleton";
+import Clock from "./Clock";
 
 const SideNav = ({
   userRole,
@@ -46,6 +45,10 @@ const SideNav = ({
     }
     return "Unknown User";
   };
+
+  if (!user) {
+    return <SideNavSkeleton />;
+  }
 
   return (
     <>
@@ -95,6 +98,7 @@ const SideNav = ({
             </div>
             <div className="block">
               <ul className="menu menu-horizontal">
+                <Clock />
                 <div className="flex items-center gap-4 bg-transparent">
                   <div
                     tabIndex={0}
@@ -208,7 +212,7 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
   const inactiveClasses = "text-gray-900 hover:text-gray-900 hover:bg-gray-100";
 
   return (
-    <div>
+    <>
       {item.submenu ? (
         <>
           <button
@@ -231,7 +235,7 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
           </button>
           {subMenuOpen && (
             <div className="mt-1 space-y-1">
-              {item.submenu.map((subitem, idx) => (
+              {item.submenu.map((subitem: any, idx: any) => (
                 <Link key={idx} href={subitem.path}>
                   <span
                     className={`block w-full text-left text-lg p-2 pl-10 ${
@@ -260,7 +264,7 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
           </div>
         </Link>
       )}
-    </div>
+    </>
   );
 };
 

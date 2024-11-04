@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     const tokenData = {
-      fpsId: fps.fpsId,
+      fpsId: fps.fpsUserId,
       ownerName: fps.fullName,
       pincode: fps.pincode,
       role: fps.role,

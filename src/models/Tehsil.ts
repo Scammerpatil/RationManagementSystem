@@ -47,12 +47,6 @@ const TehsilSchema = new Schema(
     transactions: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Transaction" },
     ],
-    allocatedStock: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Stock",
-      },
-    ],
   },
   { timestamps: true }
 );

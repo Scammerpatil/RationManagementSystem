@@ -1,5 +1,8 @@
+import dbConfig from "@/middlewares/db.config";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
+
+dbConfig();
 
 export async function POST(req: NextRequest) {
   var { token } = await req.json();
