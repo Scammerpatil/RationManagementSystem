@@ -2,9 +2,16 @@
 import { useUser } from "@/context/UserContext";
 import { RationCard } from "@/types/RationCard";
 import { FC } from "react";
-
+import { User } from "@/types/User";
 const UserDashboard: FC = () => {
-  const { user } = useUser() as { user: RationCard };
+  const { user, userType } = useUser();
+
+  if (userType !== "RationCard" || !user) {
+    return <p>No Ration Card data available.</p>;
+  }
+
+  const rationCardUser = user as RationCard;
+  console.log("Family Members:", rationCardUser.members);
 
   return (
     <div className="p-10 bg-white rounded-lg">
@@ -16,24 +23,28 @@ const UserDashboard: FC = () => {
       <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Ration Card Overview</h2>
         <p>
-          <strong>Ration Card Number:</strong> {user?.rationCardNumber || "N/A"}
+          <strong>Ration Card Number:</strong>{" "}
+          {rationCardUser?.rationCardNumber || "N/A"}
         </p>
         <p>
-          <strong>Card Type:</strong> {user?.cardType || "N/A"}
+          <strong>Card Type:</strong> {rationCardUser?.cardType || "N/A"}
         </p>
         <p>
-          <strong>Head of Family:</strong> {user?.head?.fullName || "N/A"}
+          <strong>Head of Family:</strong>{" "}
+          {rationCardUser?.head?.fullName || "N/A"}
         </p>
         <p>
-          <strong>Income:</strong> {user?.head?.income || "N/A"}
+          <strong>Income:</strong> {rationCardUser?.head?.income || "N/A"}
         </p>
         <p>
-          <strong>Caste Category:</strong> {user?.head?.caste || "N/A"}
+          <strong>Caste Category:</strong>{" "}
+          {rationCardUser?.head?.caste || "N/A"}
         </p>
         <p>
-          <strong>Address:</strong> {user?.address?.street || "N/A"},{" "}
-          {user?.address?.district || "N/A"}, {user?.address?.state || "N/A"},{" "}
-          {user?.address?.pincode || "N/A"}
+          <strong>Address:</strong> {rationCardUser?.address?.street || "N/A"},{" "}
+          {rationCardUser?.address?.district || "N/A"},{" "}
+          {rationCardUser?.address?.state || "N/A"},{" "}
+          {rationCardUser?.address?.pincode || "N/A"}
         </p>
       </div>
 
@@ -41,11 +52,11 @@ const UserDashboard: FC = () => {
       <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Family Members</h2>
         <ul className="list-disc ml-5">
-          {user?.members && user.members.length > 0 ? (
-            user.members.map((member, index) => (
+          {rationCardUser.members && rationCardUser.members.length > 0 ? (
+            rationCardUser.members.map((member, index) => (
               <li key={index}>
-                {member.fullName || "Unnamed Member"} -{" "}
-                {member.role || "Role Unspecified"}
+                {member.fullName ? member.fullName : "Unnamed Member"} -{" "}
+                {member.relationship || "Relationship Unspecified"}
               </li>
             ))
           ) : (
@@ -57,19 +68,19 @@ const UserDashboard: FC = () => {
       {/* Stock Allocation */}
       <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Stock Allocation</h2>
-        {user?.stock ? (
+        {rationCardUser.stock ? (
           <ul>
             <li>
-              <strong>Wheat:</strong> {user.stock.wheat || "N/A"}
+              <strong>Wheat:</strong> {rationCardUser.stock.wheat || "N/A"}
             </li>
             <li>
-              <strong>Rice:</strong> {user.stock.rice || "N/A"}
+              <strong>Rice:</strong> {rationCardUser.stock.rice || "N/A"}
             </li>
             <li>
-              <strong>Sugar:</strong> {user.stock.sugar || "N/A"}
+              <strong>Sugar:</strong> {rationCardUser.stock.sugar || "N/A"}
             </li>
             <li>
-              <strong>Oil:</strong> {user.stock.oil || "N/A"}
+              <strong>Oil:</strong> {rationCardUser.stock.oil || "N/A"}
             </li>
           </ul>
         ) : (
@@ -80,12 +91,13 @@ const UserDashboard: FC = () => {
       {/* Recent Transactions */}
       <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
-        {user?.transactions && user.transactions.length > 0 ? (
-          user.transactions.map((transaction, index) => (
+        {rationCardUser.transactions &&
+        rationCardUser.transactions.length > 0 ? (
+          rationCardUser.transactions.map((transaction, index) => (
             <div key={index} className="mb-3">
               <p>
                 <strong>Date:</strong>{" "}
-                {new Date(transaction.date).getTime() || "N/A"}
+                {new Date(transaction.date).toLocaleDateString() || "N/A"}
               </p>
               <ul>
                 <li>

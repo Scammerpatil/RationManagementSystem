@@ -128,7 +128,7 @@ const SideNav = ({
                       </div>
                       <hr className="my-2 border-gray-300" />
                       <div className="flex flex-col">
-                        <button
+                        {/* <button
                           onClick={() => router.push("/account")}
                           className="text-left px-4 py-2 text-base text-gray-900 hover:bg-gray-200 transition duration-200"
                         >
@@ -139,7 +139,7 @@ const SideNav = ({
                           className="text-left px-4 py-2 text-base text-gray-900 hover:bg-gray-200 transition duration-200"
                         >
                           Profile
-                        </button>
+                        </button> */}
                         <button
                           onClick={handleLogout}
                           className="text-left px-4 py-2 text-base text-gray-900 hover:bg-gray-200 transition duration-200"
