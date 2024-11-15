@@ -9,7 +9,8 @@ dbConfig();
 
 export async function POST(req: NextRequest) {
   const { aadhaar, rationNumber, password } = await req.json();
-
+  console.log(req.body);
+  
   if (!aadhaar && !rationNumber) {
     return NextResponse.json(
       { message: "Please provide Aadhaar or ration number" },

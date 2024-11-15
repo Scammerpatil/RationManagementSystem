@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
   const token = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log(token);
   const response = await verifyEmail(userEmail, token);
   if (response) {
     return NextResponse.json({ token, userEmail }, { status: 200 });
