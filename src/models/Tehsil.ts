@@ -44,6 +44,16 @@ const TehsilSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Stock",
     },
+    allocatedStock: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Stock",
+      },
+    ],
+    remainingStock: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Stock",
+    },
     transactions: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Transaction" },
     ],

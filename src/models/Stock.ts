@@ -1,6 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 
 const StockSchema = new Schema({
+  month: {
+    type: String,
+  },
   wheat: {
     type: Number,
     default: 0,

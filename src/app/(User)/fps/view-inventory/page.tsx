@@ -4,15 +4,19 @@ import axios from "axios";
 import { Transaction } from "@/types/Inventory";
 import { useUser } from "@/context/UserContext";
 import SideNavSkeleton from "@/components/PageSkeleton";
+import { FairPriceShop } from "@/types/FPS";
 
 const Inventory: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const { user } = useUser();
-
+  const { user } = useUser() as unknown as FairPriceShop;
+  if (!user) return <SideNavSkeleton />;
   useEffect(() => {
     const fetchInventoryData = async () => {
       try {
-        const transactionsRes = await axios.post("/api/inventory/transactions");
+        const transactionsRes = await axios.post(
+          "/api/inventory/transactions",
+          { userId: user._id }
+        );
 
         setTransactions(transactionsRes.data);
       } catch (error) {
@@ -73,7 +77,7 @@ const Inventory: React.FC = () => {
                 <td className="p-3">
                   {new Date(transaction.date).toLocaleDateString()}
                 </td>
-                <td className="p-3">{transaction.item}</td>
+                <td className="p-3">{transaction.stock.toString()}</td>
                 <td className="p-3">{transaction.quantity}</td>
                 <td className="p-3">{transaction.type}</td>
               </tr>

@@ -1,99 +1,107 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import { RationCard, StockRequirement } from "@/types/DistributeStock";
 import { useUser } from "@/context/UserContext";
 import SideNavSkeleton from "@/components/PageSkeleton";
+import { FairPriceShop } from "@/types/FPS";
+import { RationCard } from "@/types/RationCard";
+import toast from "react-hot-toast";
 
 const DistributeStock: React.FC = () => {
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const { user } = useUser();
+  const { user } = useUser() as unknown as {
+    user: FairPriceShop;
+  };
 
-  const toggleRowExpansion = (id: string) => {
-    setExpandedRows((prev) => {
-      const updated = new Set(prev);
-      if (updated.has(id)) {
-        updated.delete(id);
-      } else {
-        updated.add(id);
-      }
-      return updated;
-    });
+  const distributeStock = async (rationCard: RationCard) => {
+    try {
+      const data = axios.post("/api/user/distribute-stock", {
+        fpsId: user._id,
+        rationCardId: rationCard._id,
+        requiredStock: rationCard.stock,
+      });
+      toast.promise(data, {
+        loading: "Distributing stock...",
+        success: "Stock distributed successfully",
+        error: "Error distributing stock",
+      });
+    } catch (error: any) {
+      console.error("Error distributing stock:", error);
+    }
   };
 
   if (!user) return <SideNavSkeleton />;
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Distribute Stock</h1>
-
-      <table className="min-w-full border border-gray-300 bg-white shadow-md">
-        <thead>
-          <tr className="border-b">
-            <th className="p-3 text-left font-semibold">Ration Card ID</th>
-            <th className="p-3 text-left font-semibold">Cardholder Name</th>
-            <th className="p-3 text-left font-semibold">Total Members</th>
-            <th className="p-3 text-left font-semibold">Required Stock</th>
-            <th className="p-3 text-left font-semibold">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rationCards.map((card) => (
-            <React.Fragment key={card.id}>
-              <tr className="border-b">
-                <td className="p-3">{card.id}</td>
-                <td className="p-3">{card.cardholderName}</td>
-                <td className="p-3">{card.totalMembers}</td>
-                <td className="p-3">
-                  {card.requiredStock.reduce(
-                    (total, item) => total + item.quantity,
-                    0
-                  )}
-                </td>
-                <td className="p-3">
-                  <button
-                    className="text-blue-500"
-                    onClick={() => toggleRowExpansion(card.id)}
-                  >
-                    {expandedRows.has(card.id)
-                      ? "Hide Details"
-                      : "View Details"}
-                  </button>
-                </td>
-              </tr>
-
-              {/* Expandable row for nested stock requirements table */}
-              {expandedRows.has(card.id) && (
-                <tr>
-                  <td colSpan={5} className="p-3 bg-gray-100">
-                    <h3 className="text-lg font-semibold mb-2">
-                      Required Stock Details
-                    </h3>
-                    <table className="min-w-full border border-gray-300 bg-white">
+      <h1 className="text-3xl font-bold mb-6">Distribute Stock</h1>
+      <div className="overflow-x-auto">
+        <table className="table table-zebra w-full border border-gray-200">
+          <thead>
+            <tr>
+              <th className="p-4 text-left">Ration Card ID</th>
+              <th className="p-4 text-left">Cardholder Name</th>
+              <th className="p-4 text-left">Total Members</th>
+              <th className="p-4 text-left">Required Stock</th>
+              <th className="p-4 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {user.rationUnder.map((card: RationCard) => (
+              <tr key={card._id} className="">
+                <td className="p-4">{card.rationCardNumber}</td>
+                <td className="p-4">{card.head.fullName}</td>
+                <td className="p-4">{card.members.length + 1}</td>
+                <td className="p-4">
+                  <div className="overflow-x-auto">
+                    <table className="table table-compact w-full bg-gray-50">
                       <thead>
-                        <tr className="border-b">
-                          <th className="p-2 text-left font-semibold">Item</th>
-                          <th className="p-2 text-left font-semibold">
-                            Quantity
-                          </th>
+                        <tr>
+                          <th className="p-2 text-left">Item</th>
+                          <th className="p-2 text-left">Quantity</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {card.requiredStock.map((stock, index) => (
-                          <tr key={index} className="border-b">
-                            <td className="p-2">{stock.item}</td>
-                            <td className="p-2">{stock.quantity}</td>
-                          </tr>
-                        ))}
+                        <tr>
+                          <td className="p-2">Wheat</td>
+                          <td className="p-2">{card.stock.wheat}</td>
+                        </tr>
+                        <tr>
+                          <td className="p-2">Bajra</td>
+                          <td className="p-2">{card.stock.bajra}</td>
+                        </tr>
+                        <tr>
+                          <td className="p-2">Rice</td>
+                          <td className="p-2">{card.stock.rice}</td>
+                        </tr>
+                        <tr>
+                          <td className="p-2">Sugar</td>
+                          <td className="p-2">{card.stock.sugar}</td>
+                        </tr>
+                        <tr>
+                          <td className="p-2">Corn</td>
+                          <td className="p-2">{card.stock.corn}</td>
+                        </tr>
+                        <tr>
+                          <td className="p-2">Oil</td>
+                          <td className="p-2">{card.stock.oil}</td>
+                        </tr>
                       </tbody>
                     </table>
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
+                  </div>
+                </td>
+                <td className="p-4">
+                  <button
+                    className="btn btn-sm btn-success"
+                    onClick={() => distributeStock(card)}
+                  >
+                    Distribute
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

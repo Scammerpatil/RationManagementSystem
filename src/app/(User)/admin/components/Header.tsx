@@ -20,7 +20,7 @@ function Header() {
           </p>
         </div>
       </a>
-      <a className="btn cursor-pointer opacity-0" href="/admin/dashboard">
+      <a className="btn cursor-pointer opacity-0" href="/admin/login">
         Login
       </a>
       <div

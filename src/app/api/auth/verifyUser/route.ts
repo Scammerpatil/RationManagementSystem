@@ -21,7 +21,13 @@ export async function GET(req: NextRequest) {
     };
     const rationCard = await RationCard.findOne({
       _id: user.rationCardId,
-    }).populate("address stock fpsId head");
+    })
+      .populate("address")
+      .populate("stock")
+      .populate("members")
+      .populate("head")
+      .populate("fpsId")
+      .populate("monthlyStockRecords");
     if (!rationCard) {
       return NextResponse.json({ error: "No ration card found" });
     }

@@ -30,6 +30,17 @@ export async function POST(req: NextRequest) {
       userEmail = rationCard.head.email;
     }
   }
+  const rationCard = await RationCard.findOne({
+    rationCardNumber: number,
+  }).populate("head");
+  if (!rationCard) {
+    return NextResponse.json(
+      { message: "Ration Card not found" },
+      { status: 404 }
+    );
+  } else {
+    userEmail = rationCard.head.email;
+  }
 
   if (!userEmail) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });

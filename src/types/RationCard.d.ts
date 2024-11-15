@@ -16,5 +16,7 @@ export interface RationCard {
   fpsId?: FairPriceShop;
   stock: Stock;
   transactions: Transaction[];
+  monthlyStockRecords: Stock[];
   isAdminApproved: boolean;
+  createdAt: Date;
 }

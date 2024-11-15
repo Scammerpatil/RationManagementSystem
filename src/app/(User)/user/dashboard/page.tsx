@@ -45,7 +45,9 @@ const UserDashboard: FC = () => {
             user.members.map((member, index) => (
               <li key={index}>
                 {member.fullName || "Unnamed Member"} -{" "}
-                {member.role || "Role Unspecified"}
+                <span className="capitalize">
+                  {member.relationship || "Role Unspecified"}
+                </span>
               </li>
             ))
           ) : (
@@ -78,7 +80,7 @@ const UserDashboard: FC = () => {
       </div>
 
       {/* Recent Transactions */}
-      <div className="p-5 rounded-lg shadow-lg mb-6">
+      {/* <div className="p-5 rounded-lg shadow-lg mb-6">
         <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
         {user?.transactions && user.transactions.length > 0 ? (
           user.transactions.map((transaction, index) => (
@@ -106,7 +108,7 @@ const UserDashboard: FC = () => {
         ) : (
           <p>No Recent Transactions</p>
         )}
-      </div>
+      </div> */}
 
       {/* Actions */}
       <div className="p-5 rounded-lg shadow-lg mb-6">

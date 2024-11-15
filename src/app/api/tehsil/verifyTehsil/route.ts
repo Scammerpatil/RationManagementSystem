@@ -30,8 +30,31 @@ export async function GET(req: NextRequest) {
     const data = jwt.verify(token, process.env.JWT_SECRET);
     const tehsil = await Tehsil.findOne({
       tehsilUserId: data.tehsilId as string,
-    }).populate("address fpsShopUnder transactions stock");
-
+    })
+      .populate("address")
+      .populate("fpsShopUnder")
+      .populate("transactions")
+      .populate("stock")
+      .populate("remainingStock")
+      .populate("allocatedStock")
+      .populate({
+        path: "transactions",
+        populate: {
+          path: "stock",
+        },
+      })
+      .populate({
+        path: "fpsShopUnder",
+        populate: [
+          { path: "stock" },
+          { path: "remainingStock" },
+          { path: "rationUnder" },
+        ],
+      })
+      .populate({
+        path: "fpsShopUnder.rationUnder",
+        populate: [{ path: "head" }, { path: "members" }],
+      });
     if (!tehsil) {
       return NextResponse.json({ error: "Tehsil not found" }, { status: 404 });
     }

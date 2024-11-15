@@ -27,7 +27,9 @@ export async function POST(req: NextRequest) {
     }
     rationCard = await RationCard.findOne({ head: user._id }).populate("head");
   } else {
-    rationCard = await RationCard.findOne({ rationNumber }).populate("head");
+    rationCard = await RationCard.findOne({
+      rationCardNumber: rationNumber,
+    }).populate("head");
     if (!rationCard) {
       return NextResponse.json(
         { message: "Ration card not found" },

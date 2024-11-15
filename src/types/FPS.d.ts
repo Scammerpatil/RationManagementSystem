@@ -1,4 +1,5 @@
 import { ObjectId } from "mongoose";
+import { RationCard } from "./RationCard";
 
 export interface FairPriceShop {
   _id: ObjectId;
@@ -9,9 +10,9 @@ export interface FairPriceShop {
   role: "fps" | string;
   address: ObjectId;
   pincode: string;
-  rationUnder: ObjectId[];
-  stock: ObjectId;
-  remainingStock: ObjectId;
+  rationUnder: RationCard[];
+  stock: Stock;
+  remainingStock: Stock;
   transactions: ObjectId[];
   isAdminApproved: boolean;
   password: string;

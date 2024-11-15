@@ -3,6 +3,7 @@ import FairPriceShop from "@/models/FairPriceShop";
 import RationCard from "@/models/RationCard";
 import Stock from "@/models/Stock";
 import Tehsil from "@/models/Tehsil";
+import Transaction from "@/models/Transaction";
 import User from "@/models/User";
 import mongoose from "mongoose";
 
@@ -27,6 +28,7 @@ const dbConfig = async () => {
   Address;
   Tehsil;
   FairPriceShop;
+  Transaction;
 };
 
 export default dbConfig;

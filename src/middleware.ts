@@ -40,10 +40,9 @@ export async function middleware(req: NextRequest) {
     "/tehsil-login",
     "/ration/new",
     "/not-approved",
+    "/admin/:path*",
     "/fps/register",
     "/tehsil/register",
-    "/admin/register",
-    "/admin/login",
   ].includes(pathname);
 
   const token = req.cookies.get("token")?.value || "";
@@ -98,10 +97,8 @@ export const config = {
     "/fps/register",
     "/tehsil/register",
     "/admin/register",
-    "/admin/login",
     "/user/:path*",
     "/fps/:path*",
     "/tehsil/:path*",
-    "/admin/:path*",
   ],
 };

@@ -22,7 +22,16 @@ export async function GET(req: NextRequest) {
     const data = jwt.verify(token, process.env.JWT_SECRET);
     const fps = await FairPriceShop.findOne({
       fpsUserId: data.fpsId as string,
-    }).populate("address rationUnder transactions stock remainingStock");
+    })
+      .populate("address")
+      .populate("rationUnder")
+      .populate("transactions")
+      .populate("stock")
+      .populate("remainingStock")
+      .populate({
+        path: "rationUnder",
+        populate: [{ path: "head" }, { path: "members" }, { path: "stock" }],
+      });
 
     if (!fps) {
       return NextResponse.json({ error: "FPS not found" }, { status: 404 });

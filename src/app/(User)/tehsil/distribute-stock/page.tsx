@@ -7,6 +7,8 @@ import { FairPriceShop } from "@/types/FPS";
 import TableSkeleton from "@/components/TableSkeleton";
 import { RationCard } from "@/types/RationCard";
 import { ObjectId } from "mongoose";
+import SideNavSkeleton from "@/components/PageSkeleton";
+import toast from "react-hot-toast";
 
 // Define StockItem interface for different stock types
 interface StockItem {
@@ -26,59 +28,66 @@ interface RationCardDetails extends RationCard {
 
 // Props for the main component
 export default function DistributeStockPage() {
-  const { user } = useUser();
-  const [tehsilData, setTehsilData] = useState<Tehsil | null>(null);
+  const { user } = useUser() as { user: Tehsil | null };
   const [selectedFPS, setSelectedFPS] = useState<ObjectId | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  // Fetch Tehsil and FPS stock data
-  useEffect(() => {
-    async function fetchTehsilData() {
-      if (user) {
-        try {
-          setLoading(true);
-          const response = await axios.post("/api/tehsil/getTehsil", {
-            tehsilId: (user as Tehsil).tehsilUserId,
-          });
-          setTehsilData(response.data);
-        } catch (err) {
-          setError("Failed to load data.");
-        } finally {
-          setLoading(false);
-        }
-      }
-    }
-    fetchTehsilData();
-  }, [user]);
-
   const handleViewFPS = (fpsId: ObjectId) => {
     setSelectedFPS(fpsId === selectedFPS ? null : fpsId);
   };
 
-  const handleDistributeStock = async (fpsId: string) => {
+  const handleDistributeStock = async (fpsId: string, fps: FairPriceShop) => {
     try {
-      setLoading(true);
-      await axios.post(`/api/distribute-stock`, {
-        tehsilId: (user as Tehsil).tehsilUserId,
-        fpsId,
+      const requiredStock = {
+        wheat: fps.stock.wheat - (fps.remainingStock?.wheat || 0),
+        bajra: fps.stock.bajra - (fps.remainingStock?.bajra || 0),
+        sugar: fps.stock.sugar - (fps.remainingStock?.sugar || 0),
+        corn: fps.stock.corn - (fps.remainingStock?.corn || 0),
+        oil: fps.stock.oil - (fps.remainingStock?.oil || 0),
+        rice: fps.stock.rice - (fps.remainingStock?.rice || 0),
+      };
+      const response = axios.post(`/api/fps/distribute-stock`, {
+        tehsilId: user?._id,
+        fpsId: fps._id,
+        requiredStock,
       });
-      alert("Stock distribution completed successfully.");
-    } catch (err) {
-      setError("Stock distribution failed.");
-    } finally {
-      setLoading(false);
-    }
+      toast.promise(response, {
+        loading: "Distributing stock...",
+        success: "Stock distributed successfully",
+        error: "Failed to distribute stock",
+      });
+    } catch (err) {}
   };
-
-  if (error) return <div>{error}</div>;
-  if (loading) return <TableSkeleton />;
+  if (!user) return <SideNavSkeleton />;
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-semibold mb-4">Tehsil Stock Distribution</h1>
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-4">Stock Status</h2>
+        <table className="min-w-full bg-white border border-gray-300 shadow-md">
+          <thead>
+            <tr className="border-b">
+              <th className="p-3 text-left font-semibold">Item</th>
+              <th className="p-3 text-left font-semibold">Wheat</th>
+              <th className="p-3 text-left font-semibold">Rice</th>
+              <th className="p-3 text-left font-semibold">Sugar</th>
+              <th className="p-3 text-left font-semibold">Corn</th>
+              <th className="p-3 text-left font-semibold">Oil</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b">
+              <td className="p-3">Stock</td>
+              <td className="p-3">{user.remainingStock?.wheat || 0} Kg</td>
+              <td className="p-3">{user.remainingStock?.rice || 0} Kg</td>
+              <td className="p-3">{user.remainingStock?.sugar || 0} Kg</td>
+              <td className="p-3">{user.remainingStock?.corn || 0} Kg</td>
+              <td className="p-3">{user.remainingStock?.oil || 0} Ltr</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div className="overflow-x-auto">
-        {tehsilData && (
+        {user && (
           <table className="table table-zebra w-full text-base border border-cyan-700">
             <thead className="bg-base-200">
               <tr className="text-base text-base-content">
@@ -90,7 +99,7 @@ export default function DistributeStockPage() {
               </tr>
             </thead>
             <tbody>
-              {tehsilData.fpsShopUnder.map((fps: FairPriceShop) => (
+              {user.fpsShopUnder.map((fps: FairPriceShop) => (
                 <tr key={fps.fpsUserId}>
                   <td>{fps.fullName}</td>
                   <td>
@@ -182,7 +191,9 @@ export default function DistributeStockPage() {
                   <td>
                     <button
                       className="btn btn-sm btn-secondary"
-                      onClick={() => handleDistributeStock(fps._id)}
+                      onClick={() =>
+                        handleDistributeStock(fps._id as string, fps)
+                      }
                     >
                       Distribute
                     </button>
@@ -215,7 +226,7 @@ export default function DistributeStockPage() {
               </tr>
             </thead>
             <tbody>
-              {tehsilData.fpsShopUnder
+              {user.fpsShopUnder
                 .find((fps) => fps._id === selectedFPS)
                 ?.rationUnder.map((rationCard) => (
                   <tr key={rationCard.rationCardNumber}>

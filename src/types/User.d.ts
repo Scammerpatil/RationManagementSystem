@@ -25,7 +25,6 @@ export type User = {
   aadhaarFrontCardUrl: string;
   aadhaarBackCardUrl?: string;
   incomeProofUrl?: string;
-  password: string;
   createdAt?: Date;
   updatedAt?: Date;
 };

@@ -11,20 +11,11 @@ const TehsilDashboard: React.FC = () => {
   const [pendingRationCard, setPendingRationCard] = useState<RationCard[]>([]);
   const [rationCard, setRationCard] = useState<RationCard[]>([]);
   const [fpsApprovals, setFpsApprovals] = useState<FairPriceShop[]>([]);
-  const [stock, setStock] = useState({
-    wheat: 999999,
-    rice: 999999,
-    sugar: 999999,
-    bajra: 999999,
-    oil: 999999,
-    corn: 999999,
-  });
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>(
     []
   );
-
-  const { user } = useUser();
-
+  const { user } = useUser() as { user: RationCard };
+  if (!user) return <SideNavSkeleton />;
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -74,7 +65,11 @@ const TehsilDashboard: React.FC = () => {
         <div className="bg-white p-4 shadow-md rounded-lg">
           <h3 className="text-lg font-semibold">Stock Available</h3>
           <p className="text-2xl font-bold">
-            {stock.wheat + stock.rice + stock.sugar + stock.bajra + stock.oil}
+            {user.stock.wheat +
+              user.stock.rice +
+              user.stock.sugar +
+              user.stock.bajra +
+              user.stock.oil}
           </p>
         </div>
         <div className="bg-white p-4 shadow-md rounded-lg">
@@ -110,7 +105,9 @@ const TehsilDashboard: React.FC = () => {
                   <td className="p-3">{approval.address.taluka}</td>
                   <td className="p-3">{approval.address.district}</td>
                   <td className="p-3">{approval.members.length}</td>
-                  <td className="p-3">{approval.createdAt}</td>
+                  <td className="p-3">
+                    {approval.createdAt?.toISOString().split("T")[0]}
+                  </td>
                 </tr>
               ))
             ) : (
@@ -171,11 +168,11 @@ const TehsilDashboard: React.FC = () => {
           <tbody>
             <tr className="border-b">
               <td className="p-3">Stock</td>
-              <td className="p-3">{stock.wheat} Kg</td>
-              <td className="p-3">{stock.rice} Kg</td>
-              <td className="p-3">{stock.sugar} Kg</td>
-              <td className="p-3">{stock.corn} Kg</td>
-              <td className="p-3">{stock.oil} Ltr</td>
+              <td className="p-3">{user.stock.wheat} Kg</td>
+              <td className="p-3">{user.stock.rice} Kg</td>
+              <td className="p-3">{user.stock.sugar} Kg</td>
+              <td className="p-3">{user.stock.corn} Kg</td>
+              <td className="p-3">{user.stock.oil} Ltr</td>
             </tr>
           </tbody>
         </table>
@@ -188,8 +185,8 @@ const TehsilDashboard: React.FC = () => {
           <thead>
             <tr className="border-b">
               <th className="p-3 text-left font-semibold">ID</th>
-              <th className="p-3 text-left font-semibold">Type</th>
-              <th className="p-3 text-left font-semibold">Amount</th>
+              <th className="p-3 text-left font-semibold">Sender</th>
+              <th className="p-3 text-left font-semibold">Stock</th>
               <th className="p-3 text-left font-semibold">Date</th>
             </tr>
           </thead>
@@ -197,10 +194,10 @@ const TehsilDashboard: React.FC = () => {
             {recentTransactions.length > 0 ? (
               recentTransactions.map((transaction) => (
                 <tr key={transaction._id} className="border-b">
+                  <td className="p-3">{transaction._id}</td>
+                  <td className="p-3">{transaction.senderType}</td>
                   <td className="p-3">{transaction.stock.toString()}</td>
-                  <td className="p-3">{transaction.receiverId}</td>
-                  <td className="p-3">{transaction.senderId}</td>
-                  <td className="p-3">{transaction.receiverType}</td>
+                  <td className="p-3">{transaction.date.toString()}</td>
                 </tr>
               ))
             ) : (
