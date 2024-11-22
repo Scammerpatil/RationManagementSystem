@@ -7,6 +7,7 @@ import {
   Clipboard,
   Edit,
   CheckSquare,
+  NotebookPen,
 } from "lucide-react";
 import { SideNavItem } from "@/types/types";
 
@@ -26,19 +27,24 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
     path: "/user/update-details",
     icon: <Edit width="24" height="24" />,
   },
-  {
-    title: "Check Stock",
-    path: "/user/check-stock",
-    icon: <Clipboard width="24" height="24" />,
-  },
+  // {
+  //   title: "Check Stock",
+  //   path: "/user/check-stock",
+  //   icon: <Clipboard width="24" height="24" />,
+  // },
   {
     title: "Allocated",
     path: "/user/allocated",
     icon: <CheckSquare width="24" height="24" />,
   },
-  {
-    title: "Help",
-    path: "/user/help",
-    icon: <HelpCircle width="24" height="24" />,
-  },
+  // {
+  //   title: "Help",
+  //   path: "/user/help",
+  //   icon: <HelpCircle width="24" height="24" />,
+  // },
+  // {
+  //   title: "Add Complaint",
+  //   path: "/user/add-complaint",
+  //   icon: <NotebookPen width="24" height="24" />,
+  // },
 ];

@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     remainingStockOfTehsil.sugar -= requiredStock.sugar;
     remainingStockOfTehsil.corn -= requiredStock.corn;
     remainingStockOfTehsil.oil -= requiredStock.oil;
-    remainingStockOfTehsil.bajra -= requiredStock.bajr;
+    remainingStockOfTehsil.bajra -= requiredStock.bajra;
 
     await remainingStockOfTehsil.save({ session });
 

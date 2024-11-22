@@ -12,9 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export default async function POST(
-  email: string,
-  token: string
-): Promise<boolean> {
+email: string, token: string, subject: string): Promise<boolean> {
   const template = fs.readFileSync("./src/helper/mailTemplate.ejs", "utf-8");
   const mailOptions = {
     from: "Belogical | No Reply <",

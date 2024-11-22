@@ -71,6 +71,7 @@ export default function DistributeStockPage() {
               <th className="p-3 text-left font-semibold">Rice</th>
               <th className="p-3 text-left font-semibold">Sugar</th>
               <th className="p-3 text-left font-semibold">Corn</th>
+              <th className="p-3 text-left font-semibold">Bajra</th>
               <th className="p-3 text-left font-semibold">Oil</th>
             </tr>
           </thead>
@@ -81,6 +82,7 @@ export default function DistributeStockPage() {
               <td className="p-3">{user.remainingStock?.rice || 0} Kg</td>
               <td className="p-3">{user.remainingStock?.sugar || 0} Kg</td>
               <td className="p-3">{user.remainingStock?.corn || 0} Kg</td>
+              <td className="p-3">{user.remainingStock?.bajra || 0} Kg</td>
               <td className="p-3">{user.remainingStock?.oil || 0} Ltr</td>
             </tr>
           </tbody>

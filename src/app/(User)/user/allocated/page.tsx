@@ -85,10 +85,10 @@ const Allocated = () => {
               </p>
 
               {/* Rendering stock items one by one */}
-              <div>
+              {/* <div>
                 <h5>Stock Items</h5>
                 {transaction.stock && renderStockItems(transaction.stock)}
-              </div>
+              </div> */}
             </div>
           ))}
         </div>
