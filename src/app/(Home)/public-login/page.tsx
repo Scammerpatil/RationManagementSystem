@@ -1,25 +1,12 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import {
-  ChangeEvent,
-  ChangeEventHandler,
-  FormEvent,
-  InputHTMLAttributes,
-  ReactEventHandler,
-  useEffect,
-  useState,
-} from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { EyeOff, Eye } from "lucide-react";
-import { useUser } from "@/context/UserContext";
 
 const PublicLogin = () => {
-  const [loginMethod, setLoginMethod] = useState<"aadhaar" | "rationNumber">(
-    "aadhaar"
-  );
   const [formData, setFormData] = useState({
-    aadhaar: "",
     rationNumber: "",
     password: "",
     otp: "",
@@ -45,10 +32,7 @@ const PublicLogin = () => {
 
   useEffect(() => {
     setDisabled(
-      !(
-        captcha === captchaInput &&
-        (formData.aadhaar.length === 12 || formData.rationNumber.length === 12)
-      )
+      !(captcha === captchaInput && formData.rationNumber.length === 12)
     );
   }, [captcha, captchaInput, formData]);
 
@@ -57,20 +41,11 @@ const PublicLogin = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleLoginMethodSwitch = (method: "aadhaar" | "rationNumber") => {
-    setLoginMethod(method);
-    setFormData((prevData) => ({
-      ...prevData,
-      [method === "aadhaar" ? "rationNumber" : "aadhaar"]: "",
-    }));
-  };
-
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (captcha !== captchaInput) return toast.error("Invalid Captcha");
 
     const sendOtpRequest = axios.post("/api/auth/send-otp-by-aadhar", {
-      aadhaar: formData.aadhaar || undefined,
       rationNumber: formData.rationNumber || undefined,
     });
 
@@ -107,48 +82,14 @@ const PublicLogin = () => {
           Login
         </h2>
 
-        <div className="flex justify-center mb-6">
-          <button
-            onClick={() => handleLoginMethodSwitch("aadhaar")}
-            className={`px-4 py-2 mx-2 rounded-lg font-semibold ${
-              loginMethod === "aadhaar"
-                ? "bg-indigo-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            Aadhaar Login
-          </button>
-          <button
-            onClick={() => handleLoginMethodSwitch("rationNumber")}
-            className={`px-4 py-2 mx-2 rounded-lg font-semibold ${
-              loginMethod === "rationNumber"
-                ? "bg-indigo-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            Ration Number Login
-          </button>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          {loginMethod === "aadhaar" && (
-            <InputField
-              label="Aadhaar Number"
-              name="aadhaar"
-              value={formData.aadhaar}
-              onChange={handleInputChange}
-              maxLength={12}
-            />
-          )}
-          {loginMethod === "rationNumber" && (
-            <InputField
-              label="Ration Card Number"
-              name="rationNumber"
-              value={formData.rationNumber}
-              onChange={handleInputChange}
-              maxLength={12}
-            />
-          )}
+          <InputField
+            label="Ration Card Number"
+            name="rationNumber"
+            value={formData.rationNumber}
+            onChange={handleInputChange}
+            maxLength={12}
+          />
 
           {/* Password Input with toggle */}
           <PasswordInput
